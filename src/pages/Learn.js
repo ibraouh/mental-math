@@ -326,7 +326,7 @@ export default function Learn() {
                     fontWeight: "600",
                     textAlign: "center",
                     padding: "16px",
-                    background: "rgba(52, 199, 89, 0.1)",
+                    background: "rgba(0, 255, 255, 0.1)",
                     borderRadius: "12px",
                     marginBottom: "16px",
                   }}
@@ -404,7 +404,7 @@ export default function Learn() {
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "scale(1.02)";
                 e.currentTarget.style.backgroundColor =
-                  "rgba(52, 199, 89, 0.1)";
+                  "rgba(0, 255, 255, 0.1)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "scale(1)";

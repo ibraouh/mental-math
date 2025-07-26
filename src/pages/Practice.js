@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { IoAdd, IoRemove, IoClose, IoRemoveOutline } from "react-icons/io5";
 
 export default function Practice() {
   const [difficulty, setDifficulty] = useState("easy");
@@ -14,14 +15,14 @@ export default function Practice() {
   const [practiceStarted, setPracticeStarted] = useState(false);
 
   // Auto-advance to next question when answer is correct
-  useEffect(() => {
-    if (result === "correct") {
-      const timer = setTimeout(() => {
-        generateQuestion();
-      }, 200);
-      return () => clearTimeout(timer);
-    }
-  }, [result]);
+  // useEffect(() => {
+  //   if (result === "correct") {
+  //     const timer = setTimeout(() => {
+  //       generateQuestion();
+  //     }, 200);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [result]);
 
   const generateQuestion = () => {
     let num1, num2, operation, result;
@@ -151,6 +152,16 @@ export default function Practice() {
                 }}
               >
                 <div>
+                  <label
+                    className="ios-caption"
+                    style={{
+                      display: "block",
+                      marginBottom: "4px",
+                      fontSize: "12px",
+                    }}
+                  >
+                    Left Number
+                  </label>
                   <select
                     value={leftDigits}
                     onChange={(e) => setLeftDigits(parseInt(e.target.value))}
@@ -163,6 +174,16 @@ export default function Practice() {
                   </select>
                 </div>
                 <div>
+                  <label
+                    className="ios-caption"
+                    style={{
+                      display: "block",
+                      marginBottom: "4px",
+                      fontSize: "12px",
+                    }}
+                  >
+                    Right Number
+                  </label>
                   <select
                     value={rightDigits}
                     onChange={(e) => setRightDigits(parseInt(e.target.value))}
@@ -186,10 +207,10 @@ export default function Practice() {
               </label>
               <div style={{ display: "flex", gap: "8px" }}>
                 {[
-                  { id: "addition", icon: "➕" },
-                  { id: "subtraction", icon: "➖" },
-                  { id: "multiplication", icon: "✖️" },
-                  { id: "division", icon: "➗" },
+                  { id: "addition", icon: <IoAdd size={25} /> },
+                  { id: "subtraction", icon: <IoRemove size={25} /> },
+                  { id: "multiplication", icon: <IoClose size={25} /> },
+                  { id: "division", icon: <IoRemoveOutline size={25} /> },
                 ].map((op) => (
                   <button
                     key={op.id}
@@ -207,7 +228,7 @@ export default function Practice() {
                       flex: 1,
                     }}
                   >
-                    <span>{op.icon}</span>
+                    {op.icon}
                   </button>
                 ))}
               </div>
@@ -229,20 +250,10 @@ export default function Practice() {
   return (
     <div className="ios-container ios-fade-in">
       <h1 className="ios-title">Practice</h1>
-      <p className="ios-subtitle"></p>
 
       <div className="ios-section">
         <div className="ios-card">
           <div style={{ textAlign: "center", marginBottom: "24px" }}>
-            <div className="ios-section">
-              <button
-                onClick={resetPractice}
-                className="ios-button secondary"
-                style={{ width: "100%" }}
-              >
-                Back to Settings
-              </button>
-            </div>
             <div
               style={{
                 display: "grid",
@@ -286,7 +297,7 @@ export default function Practice() {
                   fontWeight: "600",
                   textAlign: "center",
                   padding: "16px",
-                  background: "rgba(0, 122, 255, 0.1)",
+                  background: "rgba(0, 255, 255, 0.1)",
                   borderRadius: "12px",
                   marginBottom: "16px",
                 }}
@@ -310,7 +321,7 @@ export default function Practice() {
                 onChange={(e) => setUserAnswer(e.target.value)}
                 className="ios-input"
                 placeholder="Enter answer"
-                autoFocus
+                disabled={!question}
                 required
               />
             </div>
@@ -323,13 +334,13 @@ export default function Practice() {
                   borderRadius: "8px",
                   background:
                     result === "correct"
-                      ? "rgba(52, 199, 89, 0.1)"
-                      : "rgba(255, 59, 48, 0.1)",
+                      ? "rgba(0, 255, 136, 0.1)"
+                      : "rgba(255, 71, 87, 0.1)",
                   border:
                     result === "correct"
-                      ? "1px solid rgba(52, 199, 89, 0.3)"
-                      : "1px solid rgba(255, 59, 48, 0.3)",
-                  color: result === "correct" ? "#34C759" : "#FF3B30",
+                      ? "1px solid rgba(0, 255, 136, 0.3)"
+                      : "1px solid rgba(255, 71, 87, 0.3)",
+                  color: result === "correct" ? "#00ff88" : "#ff4757",
                   textAlign: "center",
                 }}
               >
@@ -341,28 +352,26 @@ export default function Practice() {
 
             <div style={{ display: "flex", gap: "12px" }}>
               <button
-                type={
-                  result ? "button" : userAnswer.trim() ? "submit" : "button"
-                }
-                onClick={
-                  result
-                    ? generateQuestion
-                    : userAnswer.trim()
-                    ? undefined
-                    : generateQuestion
-                }
+                type={userAnswer.trim() ? "submit" : "button"}
+                onClick={userAnswer.trim() ? undefined : generateQuestion}
                 className="ios-button"
                 style={{ width: "100%" }}
               >
-                {result
-                  ? "Next Question"
-                  : userAnswer.trim()
-                  ? "Check Answer"
-                  : "Skip"}
+                {userAnswer.trim() ? "Check Answer" : "Skip"}
               </button>
             </div>
           </form>
         </div>
+      </div>
+
+      <div className="ios-section">
+        <button
+          onClick={resetPractice}
+          className="ios-button secondary"
+          style={{ width: "100%" }}
+        >
+          Back to Settings
+        </button>
       </div>
     </div>
   );

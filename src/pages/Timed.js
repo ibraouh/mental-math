@@ -319,7 +319,7 @@ export default function Timed() {
                   style={{
                     fontSize: "48px",
                     marginBottom: "10px",
-                    color: timeLeft <= 10 ? "#FF3B30" : "#007AFF",
+                    color: timeLeft <= 10 ? "#ff4757" : "#00ffff",
                   }}
                 >
                   {formatTime(timeLeft)}
@@ -367,7 +367,7 @@ export default function Timed() {
                       fontWeight: "600",
                       textAlign: "center",
                       padding: "16px",
-                      background: "rgba(0, 122, 255, 0.1)",
+                      background: "rgba(0, 255, 255, 0.1)",
                       borderRadius: "12px",
                       marginBottom: "16px",
                     }}

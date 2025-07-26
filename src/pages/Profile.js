@@ -213,7 +213,7 @@ export default function Profile() {
                 width: "80px",
                 height: "80px",
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, #007AFF, #5856D6)",
+                background: "linear-gradient(135deg, #00ffff, #0080ff)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
