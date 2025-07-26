@@ -130,9 +130,9 @@ export default function Learn() {
         break;
       case "fractions":
         const den1 = Math.floor(Math.random() * 10) + 1;
-        const num1 = Math.floor(Math.random() * den1) + 1;
+        num1 = Math.floor(Math.random() * den1) + 1;
         const den2 = Math.floor(Math.random() * 10) + 1;
-        const num2 = Math.floor(Math.random() * den2) + 1;
+        num2 = Math.floor(Math.random() * den2) + 1;
         operation = "+";
         result = Math.round((num1 / den1 + num2 / den2) * 100) / 100;
         setQuestion(`${num1}/${den1} + ${num2}/${den2}`);
@@ -140,11 +140,11 @@ export default function Learn() {
         setUserAnswer("");
         return;
       case "percentages":
-        const base = Math.floor(Math.random() * 100) + 1;
-        const percentage = Math.floor(Math.random() * 100) + 1;
+        num1 = Math.floor(Math.random() * 100) + 1;
+        num2 = Math.floor(Math.random() * 100) + 1;
         operation = "%";
-        result = Math.round((base * percentage) / 100);
-        setQuestion(`${percentage}% of ${base}`);
+        result = Math.round((num1 * num2) / 100);
+        setQuestion(`${num2}% of ${num1}`);
         setAnswer(result.toString());
         setUserAnswer("");
         return;
@@ -264,14 +264,24 @@ export default function Learn() {
   }
 
   if (selectedDrill) {
+    const accuracy = total > 0 ? Math.round((score / total) * 100) : 0;
+
     return (
       <div className="ios-container ios-fade-in">
         <h1 className="ios-title">
           {DRILLS.find((d) => d.id === selectedDrill)?.name}
         </h1>
+        <p className="ios-subtitle"></p>
 
         <div className="ios-section">
           <div className="ios-card">
+            <button
+              onClick={backToDrills}
+              className="ios-button secondary"
+              style={{ width: "100%", marginBottom: "16px" }}
+            >
+              End Drill
+            </button>
             <div style={{ textAlign: "center", marginBottom: "24px" }}>
               <div
                 style={{
@@ -291,12 +301,12 @@ export default function Learn() {
                   </p>
                 </div>
                 <div style={{ textAlign: "center" }}>
-                  <p className="ios-caption">Total</p>
+                  <p className="ios-caption">Accuracy</p>
                   <p
                     className="ios-body"
                     style={{ fontSize: "24px", fontWeight: "600" }}
                   >
-                    {total}
+                    {accuracy}%
                   </p>
                 </div>
               </div>
@@ -316,7 +326,7 @@ export default function Learn() {
                     fontWeight: "600",
                     textAlign: "center",
                     padding: "16px",
-                    background: "rgba(0, 122, 255, 0.1)",
+                    background: "rgba(52, 199, 89, 0.1)",
                     borderRadius: "12px",
                     marginBottom: "16px",
                   }}
@@ -344,24 +354,14 @@ export default function Learn() {
                 />
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "12px",
-                }}
+              <button
+                type={userAnswer.trim() ? "submit" : "button"}
+                onClick={userAnswer.trim() ? undefined : generateDrillQuestion}
+                className="ios-button"
+                style={{ width: "100%" }}
               >
-                <button type="submit" className="ios-button">
-                  Submit
-                </button>
-                <button
-                  type="button"
-                  onClick={endDrill}
-                  className="ios-button secondary"
-                >
-                  End Drill
-                </button>
-              </div>
+                {userAnswer.trim() ? "Check Answer" : "Skip"}
+              </button>
             </form>
           </div>
         </div>
@@ -402,12 +402,13 @@ export default function Learn() {
               }}
               onClick={() => startDrill(drill.id)}
               onMouseEnter={(e) => {
-                e.target.style.transform = "scale(1.02)";
-                e.target.style.backgroundColor = "rgba(0, 122, 255, 0.05)";
+                e.currentTarget.style.transform = "scale(1.02)";
+                e.currentTarget.style.backgroundColor =
+                  "rgba(52, 199, 89, 0.1)";
               }}
               onMouseLeave={(e) => {
-                e.target.style.transform = "scale(1)";
-                e.target.style.backgroundColor = "";
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.backgroundColor = "";
               }}
             >
               <div style={{ textAlign: "center" }}>
