@@ -113,16 +113,6 @@ export default function Practice() {
     }, 100);
   };
 
-  // Auto-advance to next question when answer is correct
-  useEffect(() => {
-    if (result === "correct") {
-      const timer = setTimeout(() => {
-        generateQuestion();
-      }, 200);
-      return () => clearTimeout(timer);
-    }
-  }, [result, generateQuestion]);
-
   // Keep input field focused to maintain keyboard activation
   useEffect(() => {
     if (practiceStarted && question) {
@@ -133,11 +123,13 @@ export default function Practice() {
     }
   }, [practiceStarted, question]);
 
-  // Auto-advance when correct answer is typed
+  // Auto-check answer - immediately for correct, 2 seconds for wrong
   useEffect(() => {
     if (practiceStarted && question && userAnswer.trim() && !result) {
       const isCorrect = parseFloat(userAnswer) === parseFloat(answer);
+
       if (isCorrect) {
+        // Immediately handle correct answer
         // Save progress to database if user is logged in
         if (user) {
           try {
@@ -154,7 +146,29 @@ export default function Practice() {
         // Auto-advance to next question after a short delay
         setTimeout(() => {
           generateQuestion();
-        }, 200);
+        }, 400);
+      } else {
+        // Wait 2 seconds for wrong answers
+        const timer = setTimeout(() => {
+          // Save progress to database if user is logged in
+          if (user) {
+            try {
+              updateUserStats(user.uid, false);
+              addWrongAnswer(
+                user.uid,
+                `${question} = ${answer} (Your answer: ${userAnswer})`
+              );
+            } catch (error) {
+              console.error("Error saving progress:", error);
+            }
+          }
+
+          setResult("incorrect");
+          setTotalCount(totalCount + 1);
+          // Don't auto-advance for wrong answers - user needs to click "Next Question"
+        }, 2000);
+
+        return () => clearTimeout(timer);
       }
     }
   }, [
@@ -359,7 +373,7 @@ export default function Practice() {
                 </div>
               </div>
 
-              <form onSubmit={checkAnswer}>
+              <div>
                 <div style={{ marginBottom: "16px" }}>
                   <label
                     className="ios-caption"
@@ -426,28 +440,12 @@ export default function Practice() {
                   }}
                 >
                   <button
-                    type={
-                      result
-                        ? "button"
-                        : userAnswer.trim()
-                        ? "submit"
-                        : "button"
-                    }
-                    onClick={
-                      result
-                        ? generateQuestion
-                        : userAnswer.trim()
-                        ? undefined
-                        : generateQuestion
-                    }
+                    type="button"
+                    onClick={generateQuestion}
                     className="ios-button"
                     style={{ width: "100%" }}
                   >
-                    {result
-                      ? "Next Question"
-                      : userAnswer.trim()
-                      ? "Check Answer"
-                      : "Skip"}
+                    {result === "incorrect" ? "Next Question" : "Skip"}
                   </button>
 
                   <button
@@ -463,7 +461,7 @@ export default function Practice() {
                     Back to Settings
                   </button>
                 </div>
-              </form>
+              </div>
             </div>
           </div>
 
@@ -492,7 +490,7 @@ export default function Practice() {
               ></div>
             </div>
 
-            <form onSubmit={checkAnswer}>
+            <div>
               <div style={{ marginBottom: "16px" }}>
                 <label
                   className="ios-caption"
@@ -563,24 +561,12 @@ export default function Practice() {
                 }}
               >
                 <button
-                  type={
-                    result ? "button" : userAnswer.trim() ? "submit" : "button"
-                  }
-                  onClick={
-                    result
-                      ? generateQuestion
-                      : userAnswer.trim()
-                      ? undefined
-                      : generateQuestion
-                  }
+                  type="button"
+                  onClick={generateQuestion}
                   className="ios-button"
                   style={{ width: "100%" }}
                 >
-                  {result
-                    ? "Next Question"
-                    : userAnswer.trim()
-                    ? "Check Answer"
-                    : "Skip"}
+                  {result === "incorrect" ? "Next Question" : "Skip"}
                 </button>
 
                 <button
@@ -596,7 +582,7 @@ export default function Practice() {
                   Back to Settings
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
