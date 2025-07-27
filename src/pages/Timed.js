@@ -429,7 +429,7 @@ export default function Timed() {
                   className="ios-button secondary"
                   style={{ flex: 1 }}
                 >
-                  Stop Challenge
+                  Stop
                 </button>
                 <button
                   type="submit"

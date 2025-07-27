@@ -139,7 +139,7 @@ export default function Profile() {
 
       <div className="ios-section">
         <div className="ios-card">
-          <h3 className="ios-heading" style={{ marginBottom: "16px" }}>
+          <h3 className="ios-heading" style={{ marginBottom: "15px" }}>
             Statistics
           </h3>
 
@@ -155,16 +155,16 @@ export default function Profile() {
               style={{
                 background: "rgba(0, 255, 255, 0.1)",
                 borderRadius: "12px",
-                padding: "16px",
+                padding: "12px",
                 textAlign: "center",
                 border: "1px solid rgba(0, 255, 255, 0.2)",
               }}
             >
-              <div style={{ fontSize: "24px", marginBottom: "8px" }}>📊</div>
+              <div style={{ fontSize: "20px", marginBottom: "6px" }}>📊</div>
               <p className="ios-caption">Total Questions</p>
               <p
                 className="ios-body"
-                style={{ fontSize: "20px", fontWeight: "600" }}
+                style={{ fontSize: "18px", fontWeight: "600" }}
               >
                 {stats?.totalQuestions || 0}
               </p>
@@ -174,16 +174,16 @@ export default function Profile() {
               style={{
                 background: "rgba(0, 255, 136, 0.1)",
                 borderRadius: "12px",
-                padding: "16px",
+                padding: "12px",
                 textAlign: "center",
                 border: "1px solid rgba(0, 255, 136, 0.2)",
               }}
             >
-              <div style={{ fontSize: "24px", marginBottom: "8px" }}>✅</div>
-              <p className="ios-caption">Correct Answers</p>
+              <div style={{ fontSize: "20px", marginBottom: "6px" }}>✅</div>
+              <p className="ios-caption">Correct</p>
               <p
                 className="ios-body"
-                style={{ fontSize: "20px", fontWeight: "600" }}
+                style={{ fontSize: "18px", fontWeight: "600" }}
               >
                 {stats?.correctAnswers || 0}
               </p>
@@ -193,16 +193,16 @@ export default function Profile() {
               style={{
                 background: "rgba(255, 193, 7, 0.1)",
                 borderRadius: "12px",
-                padding: "16px",
+                padding: "12px",
                 textAlign: "center",
                 border: "1px solid rgba(255, 193, 7, 0.2)",
               }}
             >
-              <div style={{ fontSize: "24px", marginBottom: "8px" }}>🎯</div>
+              <div style={{ fontSize: "20px", marginBottom: "6px" }}>🎯</div>
               <p className="ios-caption">Accuracy</p>
               <p
                 className="ios-body"
-                style={{ fontSize: "20px", fontWeight: "600" }}
+                style={{ fontSize: "18px", fontWeight: "600" }}
               >
                 {stats?.accuracy || 0}%
               </p>
@@ -212,16 +212,16 @@ export default function Profile() {
               style={{
                 background: "rgba(255, 71, 87, 0.1)",
                 borderRadius: "12px",
-                padding: "16px",
+                padding: "12px",
                 textAlign: "center",
                 border: "1px solid rgba(255, 71, 87, 0.2)",
               }}
             >
-              <div style={{ fontSize: "24px", marginBottom: "8px" }}>⭐</div>
+              <div style={{ fontSize: "20px", marginBottom: "6px" }}>⭐</div>
               <p className="ios-caption">Level</p>
               <p
                 className="ios-body"
-                style={{ fontSize: "20px", fontWeight: "600" }}
+                style={{ fontSize: "18px", fontWeight: "600" }}
               >
                 {stats?.level || 1}
               </p>

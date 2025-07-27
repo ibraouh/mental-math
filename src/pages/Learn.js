@@ -409,22 +409,12 @@ export default function Learn() {
                 marginBottom: 0,
                 cursor: "pointer",
                 padding: "16px",
-                transition: "transform 0.2s ease, background-color 0.2s ease",
                 flex: 1,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
               onClick={() => startDrill(drill.id)}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "scale(1.02)";
-                e.currentTarget.style.backgroundColor =
-                  "rgba(0, 255, 255, 0.1)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-                e.currentTarget.style.backgroundColor = "";
-              }}
             >
               <div style={{ textAlign: "center" }}>
                 <div style={{ fontSize: "24px", marginBottom: "8px" }}>

@@ -327,38 +327,42 @@ export default function Practice() {
               />
             </div>
 
-            {result && (
+            {result === "incorrect" && (
               <div
                 style={{
                   marginBottom: "16px",
                   padding: "12px",
                   borderRadius: "8px",
-                  background:
-                    result === "correct"
-                      ? "rgba(0, 255, 136, 0.1)"
-                      : "rgba(255, 71, 87, 0.1)",
-                  border:
-                    result === "correct"
-                      ? "1px solid rgba(0, 255, 136, 0.3)"
-                      : "1px solid rgba(255, 71, 87, 0.3)",
-                  color: result === "correct" ? "#00ff88" : "#ff4757",
+                  background: "rgba(255, 71, 87, 0.1)",
+                  border: "1px solid rgba(255, 71, 87, 0.3)",
+                  color: "#ff4757",
                   textAlign: "center",
                 }}
               >
-                {result === "correct"
-                  ? "✅ Correct!"
-                  : `❌ Incorrect. The answer is ${answer}`}
+                ❌ Incorrect. The answer is {answer}
               </div>
             )}
 
             <div style={{ display: "flex", gap: "12px" }}>
               <button
-                type={userAnswer.trim() ? "submit" : "button"}
-                onClick={userAnswer.trim() ? undefined : generateQuestion}
+                type={
+                  result ? "button" : userAnswer.trim() ? "submit" : "button"
+                }
+                onClick={
+                  result
+                    ? generateQuestion
+                    : userAnswer.trim()
+                    ? undefined
+                    : generateQuestion
+                }
                 className="ios-button"
                 style={{ width: "100%" }}
               >
-                {userAnswer.trim() ? "Check Answer" : "Skip"}
+                {result
+                  ? "Next Question"
+                  : userAnswer.trim()
+                  ? "Check Answer"
+                  : "Skip"}
               </button>
             </div>
           </form>
