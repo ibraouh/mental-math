@@ -1,217 +1,115 @@
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
-  const { user, profile, stats, signOut, signIn, signUp } = useAuth();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
-  const [error, setError] = useState("");
+  const { user, profile, stats, signInWithGoogle, signOut } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const forceSignOut = () => {
-    // Clear any local storage or session data
-    localStorage.clear();
-    sessionStorage.clear();
-    // Force page reload to clear any cached state
-    window.location.href = "/";
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) {
+        console.error("Google sign in error:", error);
+        alert(error.message);
+      }
+    } catch (error) {
+      console.error("Google sign in error:", error);
+      alert("An error occurred during Google sign in");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSignOut = async () => {
-    setLoading(true);
-
-    // Add a timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      setLoading(false);
-      console.warn("Sign out timed out, forcing navigation");
-      forceSignOut();
-    }, 5000); // 5 second timeout
-
+    setIsLoading(true);
     try {
       const { error } = await signOut();
-      clearTimeout(timeoutId);
-
       if (error) {
         console.error("Sign out error:", error);
-        // Even if there's an error, we should still navigate to login
-        forceSignOut();
-      } else {
-        // Successful sign out
-        navigate("/");
+        // Force sign out if Firebase is unresponsive
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = "/";
       }
     } catch (error) {
-      clearTimeout(timeoutId);
-      console.error("Error signing out:", error);
-      // Force navigation even if there's an error
-      forceSignOut();
+      console.error("Sign out error:", error);
+      // Force sign out
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = "/";
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleAuth = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    try {
-      if (isSignUp) {
-        const { error } = await signUp(email, password, username);
-        if (error) {
-          setError(error.message);
-        } else {
-          setError("Check your email for confirmation link!");
-        }
-      } else {
-        const { error } = await signIn(email, password);
-        if (error) {
-          setError(error.message);
-        }
-      }
-    } catch (error) {
-      setError("An unexpected error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // If user is not authenticated, show login/signup form
+  // Show login form for logged out users
   if (!user) {
     return (
       <div className="ios-container ios-fade-in">
-        <h1 className="ios-title">Account</h1>
-        <p className="ios-subtitle">
-          Sign in or Sign up to unlock all features
-        </p>
+        <h1 className="ios-title">Sign In</h1>
+        <p className="ios-subtitle">Access your math progress</p>
 
         <div className="ios-section">
           <div className="ios-card">
-            <form onSubmit={handleAuth}>
-              {isSignUp && (
-                <div style={{ marginBottom: "16px" }}>
-                  <label
-                    className="ios-caption"
-                    style={{ display: "block", marginBottom: "8px" }}
-                  >
-                    Username
-                  </label>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="ios-input"
-                    placeholder="Enter username"
-                    required
-                  />
-                </div>
-              )}
-
-              <div style={{ marginBottom: "16px" }}>
-                <label
-                  className="ios-caption"
-                  style={{ display: "block", marginBottom: "8px" }}
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="ios-input"
-                  placeholder="Enter email"
-                  required
-                />
-              </div>
-
-              <div style={{ marginBottom: "24px" }}>
-                <label
-                  className="ios-caption"
-                  style={{ display: "block", marginBottom: "8px" }}
-                >
-                  Password
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="ios-input"
-                  placeholder="Enter password"
-                  required
-                />
-              </div>
-
-              {error && (
-                <div
-                  style={{
-                    marginBottom: "16px",
-                    padding: "12px",
-                    borderRadius: "8px",
-                    background: "rgba(255, 59, 48, 0.1)",
-                    border: "1px solid rgba(255, 59, 48, 0.3)",
-                    color: "#FF3B30",
-                  }}
-                >
-                  {error}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                className="ios-button"
-                disabled={loading}
-                style={{ width: "100%", marginBottom: "16px" }}
+            <div style={{ textAlign: "center", marginBottom: "24px" }}>
+              <div
+                style={{
+                  width: "80px",
+                  height: "80px",
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #4285F4, #34A853)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 16px auto",
+                  fontSize: "32px",
+                }}
               >
-                {loading ? "Please wait..." : isSignUp ? "Sign Up" : "Sign In"}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="ios-button secondary"
-                style={{ width: "100%" }}
+                🔐
+              </div>
+              <p
+                className="ios-body"
+                style={{ color: "#8E8E93", marginBottom: "24px" }}
               >
-                {isSignUp
-                  ? "Already have an account? Sign In"
-                  : "Need an account? Sign Up"}
-              </button>
-            </form>
+                Sign in with your Google account to track your math progress and
+                unlock all features.
+              </p>
+            </div>
+
+            <button
+              onClick={handleGoogleSignIn}
+              className="ios-button"
+              style={{ width: "100%" }}
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing In..." : "Continue with Google"}
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
-  // If user is authenticated, show profile info
-  const displayName =
-    profile?.username || user.user_metadata?.username || "Math Learner";
-  const level = stats?.level || profile?.level || 1;
-  const totalQuestions = stats?.totalQuestions || profile?.total_questions || 0;
-  const correctAnswers = stats?.correctAnswers || profile?.correct_answers || 0;
-  const accuracy = stats?.accuracy || 0;
-
-  const statsData = [
-    { label: "Total Questions", value: totalQuestions, icon: "📊" },
-    { label: "Correct Answers", value: correctAnswers, icon: "✅" },
-    { label: "Accuracy", value: `${accuracy}%`, icon: "🎯" },
-    { label: "Current Level", value: level, icon: "⭐" },
-  ];
-
+  // Show profile for logged in users
   return (
     <div className="ios-container ios-fade-in">
       <h1 className="ios-title">Profile</h1>
-      <p className="ios-subtitle"></p>
 
-      {/* User Info Section */}
       <div className="ios-section">
         <div className="ios-card">
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "16px",
+              marginBottom: "24px",
+            }}
+          >
             <div
               style={{
-                width: "80px",
-                height: "80px",
+                width: "60px",
+                height: "60px",
                 borderRadius: "50%",
                 background: "linear-gradient(135deg, #00ffff, #0080ff)",
                 display: "flex",
@@ -221,67 +119,86 @@ export default function Profile() {
                 flexShrink: 0,
               }}
             >
-              {displayName.charAt(0).toUpperCase()}
+              {profile?.profile_icon || "🧮"}
             </div>
+
             <div style={{ flex: 1 }}>
-              <h2 className="ios-heading" style={{ marginBottom: "0px" }}>
-                {displayName}
-              </h2>
-              <p className="ios-caption">{user.email}</p>
-              <p className="ios-caption">
-                Level {level} • {accuracy}% accuracy
+              <h3 className="ios-heading" style={{ marginBottom: "4px" }}>
+                {profile?.display_name || user.displayName || "Math Learner"}
+              </h3>
+              <p
+                className="ios-body"
+                style={{ color: "#8E8E93", marginBottom: "4px" }}
+              >
+                {user.email}
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Stats Section */}
       <div className="ios-section">
-        <h3 className="ios-heading" style={{ marginBottom: "16px" }}>
-          Statistics
-        </h3>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "12px",
-          }}
-        >
-          {statsData.map((stat, index) => (
-            <div
-              key={index}
-              className="ios-card"
-              style={{ marginBottom: 0, textAlign: "center" }}
-            >
-              <div style={{ fontSize: "24px", marginBottom: "8px" }}>
-                {stat.icon}
-              </div>
+        <div className="ios-card">
+          <h3 className="ios-heading" style={{ marginBottom: "16px" }}>
+            Statistics
+          </h3>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "16px",
+              marginBottom: "16px",
+            }}
+          >
+            <div style={{ textAlign: "center" }}>
+              <p className="ios-caption">Total Questions</p>
               <p
                 className="ios-body"
-                style={{
-                  fontSize: "20px",
-                  fontWeight: "600",
-                  marginBottom: "4px",
-                }}
+                style={{ fontSize: "24px", fontWeight: "600" }}
               >
-                {stat.value}
+                {stats?.totalQuestions || 0}
               </p>
-              <p className="ios-caption">{stat.label}</p>
             </div>
-          ))}
+            <div style={{ textAlign: "center" }}>
+              <p className="ios-caption">Correct Answers</p>
+              <p
+                className="ios-body"
+                style={{ fontSize: "24px", fontWeight: "600" }}
+              >
+                {stats?.correctAnswers || 0}
+              </p>
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <p className="ios-caption">Accuracy</p>
+              <p
+                className="ios-body"
+                style={{ fontSize: "24px", fontWeight: "600" }}
+              >
+                {stats?.accuracy || 0}%
+              </p>
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <p className="ios-caption">Level</p>
+              <p
+                className="ios-body"
+                style={{ fontSize: "24px", fontWeight: "600" }}
+              >
+                {stats?.level || 1}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Sign Out Button */}
       <div className="ios-section">
         <button
           onClick={handleSignOut}
           className="ios-button secondary"
-          disabled={loading}
           style={{ width: "100%" }}
+          disabled={isLoading}
         >
-          {loading ? "Signing Out..." : "Sign Out"}
+          {isLoading ? "Signing Out..." : "Sign Out"}
         </button>
       </div>
     </div>

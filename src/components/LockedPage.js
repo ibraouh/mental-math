@@ -27,7 +27,7 @@ export default function LockedPage({ title, description, icon }) {
             justifyContent: "center",
             margin: "0 auto 32px auto",
             fontSize: "48px",
-            opacity: 0.6,
+            opacity: 0.85,
           }}
         >
           🔒

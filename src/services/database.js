@@ -1,316 +1,242 @@
-import { supabase } from "../lib/supabase";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
+import { db } from "../lib/firebase";
 
-// Profile operations with fallback to localStorage
+// Get user profile from Firestore
 export const getProfile = async (userId) => {
   try {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
+    const profileRef = doc(db, "profiles", userId);
+    const profileSnap = await getDoc(profileRef);
 
-    if (error) {
-      console.warn("Supabase profile fetch failed, using localStorage:", error);
-      // Fallback to localStorage
-      const localProfile = localStorage.getItem(`profile_${userId}`);
-      return {
-        data: localProfile ? JSON.parse(localProfile) : null,
-        error: null,
-      };
+    if (profileSnap.exists()) {
+      return { data: profileSnap.data(), error: null };
+    } else {
+      return { data: null, error: null };
     }
-
-    return { data, error };
   } catch (err) {
-    console.warn("Profile fetch error, using localStorage:", err);
-    const localProfile = localStorage.getItem(`profile_${userId}`);
-    return {
-      data: localProfile ? JSON.parse(localProfile) : null,
-      error: null,
-    };
+    console.warn("Firestore getProfile error:", err);
+    // Fallback to localStorage
+    const stored = localStorage.getItem(`profile_${userId}`);
+    return { data: stored ? JSON.parse(stored) : null, error: err };
   }
 };
 
-export const createProfile = async (userId, username) => {
+// Create user profile in Firestore
+export const createProfile = async (userId, profileData) => {
   try {
-    const profileData = {
-      id: userId,
-      username,
-      level: 1,
+    const defaultProfile = {
+      display_name: profileData?.display_name || "Math Learner",
+      profile_icon: profileData?.profile_icon || "🧮",
       total_questions: 0,
       correct_answers: 0,
+      level: 1,
+      wrong_answers: {},
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await supabase
-      .from("profiles")
-      .insert([profileData])
-      .select()
-      .single();
+    const profileRef = doc(db, "profiles", userId);
+    await setDoc(profileRef, defaultProfile);
 
-    if (error) {
-      console.warn(
-        "Supabase profile creation failed, using localStorage:",
-        error
-      );
-      // Fallback to localStorage
-      localStorage.setItem(`profile_${userId}`, JSON.stringify(profileData));
-      return { data: profileData, error: null };
-    }
+    // Also store in localStorage as backup
+    localStorage.setItem(`profile_${userId}`, JSON.stringify(defaultProfile));
 
-    // Also save to localStorage as backup
-    localStorage.setItem(`profile_${userId}`, JSON.stringify(data));
-    return { data, error };
+    return { data: defaultProfile, error: null };
   } catch (err) {
-    console.warn("Profile creation error, using localStorage:", err);
-    const profileData = {
-      id: userId,
-      username,
-      level: 1,
+    console.warn("Firestore createProfile error:", err);
+    // Fallback to localStorage only
+    const defaultProfile = {
+      display_name: profileData?.display_name || "Math Learner",
+      profile_icon: profileData?.profile_icon || "🧮",
       total_questions: 0,
       correct_answers: 0,
+      level: 1,
+      wrong_answers: {},
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
-    localStorage.setItem(`profile_${userId}`, JSON.stringify(profileData));
-    return { data: profileData, error: null };
+    localStorage.setItem(`profile_${userId}`, JSON.stringify(defaultProfile));
+    return { data: defaultProfile, error: err };
   }
 };
 
+// Update user profile in Firestore
 export const updateProfile = async (userId, updates) => {
   try {
-    const { data, error } = await supabase
-      .from("profiles")
-      .update(updates)
-      .eq("id", userId)
-      .select()
-      .single();
-
-    if (error) {
-      console.warn(
-        "Supabase profile update failed, using localStorage:",
-        error
-      );
-      // Fallback to localStorage
-      const localProfile = localStorage.getItem(`profile_${userId}`);
-      const updatedProfile = localProfile
-        ? { ...JSON.parse(localProfile), ...updates }
-        : updates;
-      localStorage.setItem(`profile_${userId}`, JSON.stringify(updatedProfile));
-      return { data: updatedProfile, error: null };
-    }
-
-    // Also save to localStorage as backup
-    localStorage.setItem(`profile_${userId}`, JSON.stringify(data));
-    return { data, error };
-  } catch (err) {
-    console.warn("Profile update error, using localStorage:", err);
-    const localProfile = localStorage.getItem(`profile_${userId}`);
-    const updatedProfile = localProfile
-      ? { ...JSON.parse(localProfile), ...updates }
-      : updates;
-    localStorage.setItem(`profile_${userId}`, JSON.stringify(updatedProfile));
-    return { data: updatedProfile, error: null };
-  }
-};
-
-// Simplified question history (localStorage only for now)
-export const addQuestionHistory = async (questionData) => {
-  try {
-    const { data, error } = await supabase
-      .from("question_history")
-      .insert([questionData])
-      .select()
-      .single();
-
-    if (error) {
-      console.warn(
-        "Supabase question history failed, using localStorage:",
-        error
-      );
-      // Fallback to localStorage
-      const history = JSON.parse(
-        localStorage.getItem("question_history") || "[]"
-      );
-      history.push({
-        ...questionData,
-        id: Date.now(),
-        created_at: new Date().toISOString(),
-      });
-      localStorage.setItem("question_history", JSON.stringify(history));
-      return { data: questionData, error: null };
-    }
-
-    return { data, error };
-  } catch (err) {
-    console.warn("Question history error, using localStorage:", err);
-    const history = JSON.parse(
-      localStorage.getItem("question_history") || "[]"
-    );
-    history.push({
-      ...questionData,
-      id: Date.now(),
-      created_at: new Date().toISOString(),
+    const profileRef = doc(db, "profiles", userId);
+    await updateDoc(profileRef, {
+      ...updates,
+      updated_at: new Date().toISOString(),
     });
-    localStorage.setItem("question_history", JSON.stringify(history));
-    return { data: questionData, error: null };
-  }
-};
 
-export const getQuestionHistory = async (userId, limit = 50) => {
-  try {
-    const { data, error } = await supabase
-      .from("question_history")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(limit);
-
-    if (error) {
-      console.warn(
-        "Supabase question history fetch failed, using localStorage:",
-        error
-      );
-      // Fallback to localStorage
-      const history = JSON.parse(
-        localStorage.getItem("question_history") || "[]"
-      );
-      const userHistory = history
-        .filter((q) => q.user_id === userId)
-        .slice(0, limit);
-      return { data: userHistory, error: null };
-    }
-
-    return { data, error };
-  } catch (err) {
-    console.warn("Question history fetch error, using localStorage:", err);
-    const history = JSON.parse(
-      localStorage.getItem("question_history") || "[]"
-    );
-    const userHistory = history
-      .filter((q) => q.user_id === userId)
-      .slice(0, limit);
-    return { data: userHistory, error: null };
-  }
-};
-
-// Simplified achievements (localStorage only for now)
-export const addAchievement = async (userId, achievementType) => {
-  try {
-    const { data, error } = await supabase
-      .from("achievements")
-      .insert([
-        {
-          user_id: userId,
-          achievement_type: achievementType,
-        },
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      console.warn("Supabase achievement failed, using localStorage:", error);
-      // Fallback to localStorage
-      const achievements = JSON.parse(
-        localStorage.getItem("achievements") || "[]"
-      );
-      achievements.push({
-        user_id: userId,
-        achievement_type: achievementType,
-        id: Date.now(),
-        earned_at: new Date().toISOString(),
-      });
-      localStorage.setItem("achievements", JSON.stringify(achievements));
-      return {
-        data: { user_id: userId, achievement_type: achievementType },
-        error: null,
-      };
-    }
-
-    return { data, error };
-  } catch (err) {
-    console.warn("Achievement error, using localStorage:", err);
-    const achievements = JSON.parse(
-      localStorage.getItem("achievements") || "[]"
-    );
-    achievements.push({
-      user_id: userId,
-      achievement_type: achievementType,
-      id: Date.now(),
-      earned_at: new Date().toISOString(),
-    });
-    localStorage.setItem("achievements", JSON.stringify(achievements));
-    return {
-      data: { user_id: userId, achievement_type: achievementType },
-      error: null,
+    // Update localStorage backup
+    const current = localStorage.getItem(`profile_${userId}`);
+    const currentData = current ? JSON.parse(current) : {};
+    const updatedData = {
+      ...currentData,
+      ...updates,
+      updated_at: new Date().toISOString(),
     };
-  }
-};
+    localStorage.setItem(`profile_${userId}`, JSON.stringify(updatedData));
 
-export const getAchievements = async (userId) => {
-  try {
-    const { data, error } = await supabase
-      .from("achievements")
-      .select("*")
-      .eq("user_id", userId)
-      .order("earned_at", { ascending: false });
-
-    if (error) {
-      console.warn(
-        "Supabase achievements fetch failed, using localStorage:",
-        error
-      );
-      // Fallback to localStorage
-      const achievements = JSON.parse(
-        localStorage.getItem("achievements") || "[]"
-      );
-      const userAchievements = achievements.filter((a) => a.user_id === userId);
-      return { data: userAchievements, error: null };
-    }
-
-    return { data, error };
+    return { data: updatedData, error: null };
   } catch (err) {
-    console.warn("Achievements fetch error, using localStorage:", err);
-    const achievements = JSON.parse(
-      localStorage.getItem("achievements") || "[]"
-    );
-    const userAchievements = achievements.filter((a) => a.user_id === userId);
-    return { data: userAchievements, error: null };
+    console.warn("Firestore updateProfile error:", err);
+    // Fallback to localStorage only
+    const current = localStorage.getItem(`profile_${userId}`);
+    const currentData = current ? JSON.parse(current) : {};
+    const updatedData = {
+      ...currentData,
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
+    localStorage.setItem(`profile_${userId}`, JSON.stringify(updatedData));
+    return { data: updatedData, error: err };
   }
 };
 
-// Statistics helpers
+// Add wrong answer to user's profile
+export const addWrongAnswer = async (userId, question) => {
+  try {
+    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
+    const { data: currentProfile } = await getProfile(userId);
+    const wrongAnswers = currentProfile?.wrong_answers || {};
+
+    if (!wrongAnswers[today]) {
+      wrongAnswers[today] = [];
+    }
+    wrongAnswers[today].push(question);
+
+    const profileRef = doc(db, "profiles", userId);
+    await updateDoc(profileRef, {
+      wrong_answers: wrongAnswers,
+      updated_at: new Date().toISOString(),
+    });
+
+    // Update localStorage backup
+    const current = localStorage.getItem(`profile_${userId}`);
+    const currentData = current ? JSON.parse(current) : {};
+    const updatedData = {
+      ...currentData,
+      wrong_answers: wrongAnswers,
+      updated_at: new Date().toISOString(),
+    };
+    localStorage.setItem(`profile_${userId}`, JSON.stringify(updatedData));
+
+    return { data: wrongAnswers, error: null };
+  } catch (err) {
+    console.warn("Firestore addWrongAnswer error:", err);
+    // Fallback to localStorage only
+    const today = new Date().toISOString().split("T")[0];
+    const current = localStorage.getItem(`profile_${userId}`);
+    const currentData = current ? JSON.parse(current) : {};
+    const wrongAnswers = currentData.wrong_answers || {};
+
+    if (!wrongAnswers[today]) {
+      wrongAnswers[today] = [];
+    }
+    wrongAnswers[today].push(question);
+
+    const updatedData = {
+      ...currentData,
+      wrong_answers: wrongAnswers,
+      updated_at: new Date().toISOString(),
+    };
+    localStorage.setItem(`profile_${userId}`, JSON.stringify(updatedData));
+    return { data: wrongAnswers, error: err };
+  }
+};
+
+// Update user stats (total questions and correct answers)
+export const updateUserStats = async (userId, isCorrect) => {
+  try {
+    const { data: currentProfile } = await getProfile(userId);
+    const updates = {
+      total_questions: (currentProfile?.total_questions || 0) + 1,
+      correct_answers:
+        (currentProfile?.correct_answers || 0) + (isCorrect ? 1 : 0),
+      updated_at: new Date().toISOString(),
+    };
+
+    const profileRef = doc(db, "profiles", userId);
+    await updateDoc(profileRef, updates);
+
+    // Update localStorage backup
+    const current = localStorage.getItem(`profile_${userId}`);
+    const currentData = current ? JSON.parse(current) : {};
+    const updatedData = { ...currentData, ...updates };
+    localStorage.setItem(`profile_${userId}`, JSON.stringify(updatedData));
+
+    return { data: updatedData, error: null };
+  } catch (err) {
+    console.warn("Firestore updateUserStats error:", err);
+    // Fallback to localStorage only
+    const current = localStorage.getItem(`profile_${userId}`);
+    const currentData = current ? JSON.parse(current) : {};
+    const updates = {
+      total_questions: (currentData.total_questions || 0) + 1,
+      correct_answers: (currentData.correct_answers || 0) + (isCorrect ? 1 : 0),
+      updated_at: new Date().toISOString(),
+    };
+    const updatedData = { ...currentData, ...updates };
+    localStorage.setItem(`profile_${userId}`, JSON.stringify(updatedData));
+    return { data: updatedData, error: err };
+  }
+};
+
+// Calculate user statistics
 export const calculateStats = async (userId) => {
   try {
-    const { data: history, error: historyError } = await getQuestionHistory(
-      userId
-    );
-
-    if (historyError) {
-      console.warn("Stats calculation error:", historyError);
+    const { data: profile } = await getProfile(userId);
+    if (!profile) {
       return {
         data: { totalQuestions: 0, correctAnswers: 0, accuracy: 0, level: 1 },
         error: null,
       };
     }
 
-    const totalQuestions = history.length;
-    const correctAnswers = history.filter((q) => q.is_correct).length;
+    const totalQuestions = profile.total_questions || 0;
+    const correctAnswers = profile.correct_answers || 0;
     const accuracy =
       totalQuestions > 0
         ? Math.round((correctAnswers / totalQuestions) * 100)
         : 0;
-    const level = Math.floor(totalQuestions / 20) + 1;
+    const level = profile.level || 1;
 
     return {
-      data: {
-        totalQuestions,
-        correctAnswers,
-        accuracy,
-        level,
-      },
+      data: { totalQuestions, correctAnswers, accuracy, level },
       error: null,
     };
   } catch (err) {
-    console.warn("Stats calculation error:", err);
+    console.warn("Firestore calculateStats error:", err);
+    // Fallback to localStorage
+    const stored = localStorage.getItem(`profile_${userId}`);
+    if (!stored) {
+      return {
+        data: { totalQuestions: 0, correctAnswers: 0, accuracy: 0, level: 1 },
+        error: null,
+      };
+    }
+
+    const profile = JSON.parse(stored);
+    const totalQuestions = profile.total_questions || 0;
+    const correctAnswers = profile.correct_answers || 0;
+    const accuracy =
+      totalQuestions > 0
+        ? Math.round((correctAnswers / totalQuestions) * 100)
+        : 0;
+    const level = profile.level || 1;
+
     return {
-      data: { totalQuestions: 0, correctAnswers: 0, accuracy: 0, level: 1 },
+      data: { totalQuestions, correctAnswers, accuracy, level },
       error: null,
     };
   }
@@ -319,22 +245,24 @@ export const calculateStats = async (userId) => {
 // Initialize user profile if it doesn't exist
 export const initializeUserProfile = async (user) => {
   try {
-    const { data: existingProfile } = await getProfile(user.id);
+    const { data: existingProfile } = await getProfile(user.uid);
 
     if (!existingProfile) {
-      const username =
-        user.user_metadata?.username ||
-        user.email?.split("@")[0] ||
-        "Math Learner";
-      await createProfile(user.id, username);
+      const profileData = {
+        display_name:
+          user.displayName || user.email?.split("@")[0] || "Math Learner",
+        profile_icon: "🧮",
+      };
+      await createProfile(user.uid, profileData);
     }
   } catch (err) {
     console.warn("Profile initialization error:", err);
     // Try to create profile anyway
-    const username =
-      user.user_metadata?.username ||
-      user.email?.split("@")[0] ||
-      "Math Learner";
-    await createProfile(user.id, username);
+    const profileData = {
+      display_name:
+        user.displayName || user.email?.split("@")[0] || "Math Learner",
+      profile_icon: "🧮",
+    };
+    await createProfile(user.uid, profileData);
   }
 };

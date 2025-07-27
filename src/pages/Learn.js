@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { updateUserStats, addWrongAnswer } from "../services/database";
 import LockedPage from "../components/LockedPage";
 
 const DRILLS = [
@@ -168,12 +169,29 @@ export default function Learn() {
     generateDrillQuestion(drillType);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setTotal(total + 1);
 
-    if (parseFloat(userAnswer) === parseFloat(answer)) {
+    const isCorrect = parseFloat(userAnswer) === parseFloat(answer);
+    if (isCorrect) {
       setScore(score + 1);
+    }
+
+    // Save progress to database
+    try {
+      // Update user stats
+      await updateUserStats(user.uid, isCorrect);
+
+      // Save wrong answer if incorrect
+      if (!isCorrect) {
+        await addWrongAnswer(
+          user.uid,
+          `${question} = ${answer} (Your answer: ${userAnswer})`
+        );
+      }
+    } catch (error) {
+      console.error("Error saving progress:", error);
     }
 
     generateDrillQuestion(selectedDrill);
@@ -345,6 +363,7 @@ export default function Learn() {
                 <input
                   type="number"
                   step="any"
+                  inputMode="numeric"
                   value={userAnswer}
                   onChange={(e) => setUserAnswer(e.target.value)}
                   className="ios-input"

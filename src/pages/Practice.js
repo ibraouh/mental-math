@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { IoAdd, IoRemove, IoClose, IoRemoveOutline } from "react-icons/io5";
+import { useAuth } from "../contexts/AuthContext";
+import { updateUserStats, addWrongAnswer } from "../services/database";
 
 export default function Practice() {
+  const { user } = useAuth();
   const [difficulty, setDifficulty] = useState("easy");
   const [leftDigits, setLeftDigits] = useState(2);
   const [rightDigits, setRightDigits] = useState(2);
@@ -13,16 +16,6 @@ export default function Practice() {
   const [correctCount, setCorrectCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [practiceStarted, setPracticeStarted] = useState(false);
-
-  // Auto-advance to next question when answer is correct
-  // useEffect(() => {
-  //   if (result === "correct") {
-  //     const timer = setTimeout(() => {
-  //       generateQuestion();
-  //     }, 200);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [result]);
 
   const generateQuestion = () => {
     let num1, num2, operation, result;
@@ -81,7 +74,7 @@ export default function Practice() {
     setResult(null);
   };
 
-  const checkAnswer = (e) => {
+  const checkAnswer = async (e) => {
     e.preventDefault();
     if (!userAnswer.trim()) return;
 
@@ -92,7 +85,35 @@ export default function Practice() {
     if (isCorrect) {
       setCorrectCount(correctCount + 1);
     }
+
+    // Save progress to database if user is logged in
+    if (user) {
+      try {
+        // Update user stats
+        await updateUserStats(user.uid, isCorrect);
+
+        // Save wrong answer if incorrect
+        if (!isCorrect) {
+          await addWrongAnswer(
+            user.uid,
+            `${question} = ${answer} (Your answer: ${userAnswer})`
+          );
+        }
+      } catch (error) {
+        console.error("Error saving progress:", error);
+      }
+    }
   };
+
+  // Auto-advance to next question when answer is correct
+  useEffect(() => {
+    if (result === "correct") {
+      const timer = setTimeout(() => {
+        generateQuestion();
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [result]);
 
   const handleOperationChange = (operation) => {
     if (selectedOperations.includes(operation)) {
@@ -152,16 +173,6 @@ export default function Practice() {
                 }}
               >
                 <div>
-                  <label
-                    className="ios-caption"
-                    style={{
-                      display: "block",
-                      marginBottom: "4px",
-                      fontSize: "12px",
-                    }}
-                  >
-                    Left Number
-                  </label>
                   <select
                     value={leftDigits}
                     onChange={(e) => setLeftDigits(parseInt(e.target.value))}
@@ -174,16 +185,6 @@ export default function Practice() {
                   </select>
                 </div>
                 <div>
-                  <label
-                    className="ios-caption"
-                    style={{
-                      display: "block",
-                      marginBottom: "4px",
-                      fontSize: "12px",
-                    }}
-                  >
-                    Right Number
-                  </label>
                   <select
                     value={rightDigits}
                     onChange={(e) => setRightDigits(parseInt(e.target.value))}
