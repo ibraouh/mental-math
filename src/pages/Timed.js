@@ -17,6 +17,7 @@ export default function Timed() {
   const [correctCount, setCorrectCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [showResults, setShowResults] = useState(false);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
   const endChallenge = useCallback(() => {
     setIsActive(false);
@@ -181,6 +182,7 @@ export default function Timed() {
 
   const startChallenge = () => {
     setIsActive(true);
+    setIsKeyboardOpen(true); // Activate compact mode
     setTimeLeft(time);
     setCorrectCount(0);
     setTotalCount(0);
@@ -287,7 +289,10 @@ export default function Timed() {
 
             <div style={{ display: "flex", gap: "12px" }}>
               <button
-                onClick={() => setShowResults(false)}
+                onClick={() => {
+                  setShowResults(false);
+                  setIsKeyboardOpen(false); // Deactivate compact mode
+                }}
                 className="ios-button secondary"
                 style={{ flex: 1 }}
               >
@@ -309,139 +314,267 @@ export default function Timed() {
 
   if (isActive) {
     return (
-      <div className="ios-container ios-fade-in">
-        <h1 className="ios-title">Timed Challenge</h1>
-        <p className="ios-subtitle"></p>
+      <div
+        className="ios-container ios-fade-in"
+        style={{
+          paddingTop: isKeyboardOpen ? "10px" : "20px",
+          paddingBottom: isKeyboardOpen
+            ? "10px"
+            : "calc(env(safe-area-inset-bottom, 0px) + 83px)",
+          minHeight: isKeyboardOpen ? "auto" : "100vh",
+          justifyContent: isKeyboardOpen ? "flex-start" : "flex-start",
+        }}
+      >
+        {!isKeyboardOpen ? (
+          // Normal layout when keyboard is closed
+          <>
+            <h1 className="ios-title">Timed Challenge</h1>
+            <p className="ios-subtitle"></p>
 
-        <div className="ios-section">
-          <div className="ios-card">
-            <div style={{ textAlign: "center", marginBottom: "24px" }}>
-              <div
-                style={{
-                  fontSize: "48px",
-                  fontWeight: "700",
-                  color: timeLeft > 10 ? "#00ffff" : "#ff4757",
-                  marginBottom: "16px",
-                }}
-              >
-                {formatTime(timeLeft)}
-              </div>
+            <div className="ios-section">
+              <div className="ios-card">
+                <div style={{ textAlign: "center", marginBottom: "24px" }}>
+                  <div
+                    style={{
+                      fontSize: "48px",
+                      fontWeight: "700",
+                      color: timeLeft > 10 ? "#00ffff" : "#ff4757",
+                      marginBottom: "16px",
+                    }}
+                  >
+                    {formatTime(timeLeft)}
+                  </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "16px",
-                }}
-              >
-                <div style={{ textAlign: "center" }}>
-                  <p className="ios-caption">Correct</p>
-                  <p
-                    className="ios-body"
-                    style={{ fontSize: "24px", fontWeight: "600" }}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "16px",
+                    }}
                   >
-                    {correctCount}
-                  </p>
+                    <div style={{ textAlign: "center" }}>
+                      <p className="ios-caption">Correct</p>
+                      <p
+                        className="ios-body"
+                        style={{ fontSize: "24px", fontWeight: "600" }}
+                      >
+                        {correctCount}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      <p className="ios-caption">Accuracy</p>
+                      <p
+                        className="ios-body"
+                        style={{ fontSize: "24px", fontWeight: "600" }}
+                      >
+                        {accuracy}%
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div style={{ textAlign: "center" }}>
-                  <p className="ios-caption">Accuracy</p>
-                  <p
-                    className="ios-body"
-                    style={{ fontSize: "24px", fontWeight: "600" }}
-                  >
-                    {accuracy}%
-                  </p>
-                </div>
+
+                <form onSubmit={checkAnswer}>
+                  <div style={{ marginBottom: "16px" }}>
+                    <label
+                      className="ios-caption"
+                      style={{ display: "block", marginBottom: "8px" }}
+                    >
+                      Question
+                    </label>
+                    <div
+                      style={{
+                        fontSize: "32px",
+                        fontWeight: "600",
+                        textAlign: "center",
+                        padding: "16px",
+                        background: "rgba(0, 255, 255, 0.1)",
+                        borderRadius: "12px",
+                        marginBottom: "16px",
+                      }}
+                    >
+                      {question}
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: "24px" }}>
+                    <label
+                      className="ios-caption"
+                      style={{ display: "block", marginBottom: "8px" }}
+                    >
+                      Your Answer
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      inputMode="numeric"
+                      value={userAnswer}
+                      onChange={(e) => setUserAnswer(e.target.value)}
+                      className="ios-input"
+                      placeholder="Enter answer"
+                      required
+                      autoFocus
+                    />
+                  </div>
+
+                  {result && (
+                    <div
+                      style={{
+                        marginBottom: "16px",
+                        padding: "12px",
+                        borderRadius: "8px",
+                        background:
+                          result === "correct"
+                            ? "rgba(0, 255, 136, 0.1)"
+                            : "rgba(255, 71, 87, 0.1)",
+                        border:
+                          result === "correct"
+                            ? "1px solid rgba(0, 255, 136, 0.3)"
+                            : "1px solid rgba(255, 71, 87, 0.3)",
+                        color: result === "correct" ? "#00ff88" : "#ff4757",
+                        textAlign: "center",
+                      }}
+                    >
+                      {result === "correct"
+                        ? "✅ Correct!"
+                        : `❌ Incorrect. The answer is ${answer}`}
+                    </div>
+                  )}
+
+                  <div style={{ display: "flex", gap: "12px" }}>
+                    <button
+                      type="button"
+                      onClick={endChallenge}
+                      className="ios-button secondary"
+                      style={{ flex: 1 }}
+                    >
+                      Stop
+                    </button>
+                    <button
+                      type="submit"
+                      className="ios-button"
+                      style={{ flex: 1 }}
+                    >
+                      Submit
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
-
-            <form onSubmit={checkAnswer}>
-              <div style={{ marginBottom: "16px" }}>
-                <label
-                  className="ios-caption"
-                  style={{ display: "block", marginBottom: "8px" }}
-                >
-                  Question
-                </label>
+          </>
+        ) : (
+          // Compact layout when keyboard is open
+          <div
+            style={{
+              width: "100%",
+              padding: "0 16px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "flex-start",
+              height: "100vh",
+              paddingTop: "20px",
+            }}
+          >
+            <div className="ios-card">
+              <div style={{ textAlign: "center", marginBottom: "0px" }}>
                 <div
                   style={{
-                    fontSize: "32px",
-                    fontWeight: "600",
-                    textAlign: "center",
-                    padding: "16px",
-                    background: "rgba(0, 255, 255, 0.1)",
-                    borderRadius: "12px",
-                    marginBottom: "16px",
+                    fontSize: "48px",
+                    fontWeight: "700",
+                    color: timeLeft > 10 ? "#00ffff" : "#ff4757",
                   }}
                 >
-                  {question}
+                  {formatTime(timeLeft)}
                 </div>
               </div>
 
-              <div style={{ marginBottom: "24px" }}>
-                <label
-                  className="ios-caption"
-                  style={{ display: "block", marginBottom: "8px" }}
-                >
-                  Your Answer
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  inputMode="numeric"
-                  value={userAnswer}
-                  onChange={(e) => setUserAnswer(e.target.value)}
-                  className="ios-input"
-                  placeholder="Enter answer"
-                  required
-                  autoFocus
-                />
-              </div>
-
-              {result && (
-                <div
-                  style={{
-                    marginBottom: "16px",
-                    padding: "12px",
-                    borderRadius: "8px",
-                    background:
-                      result === "correct"
-                        ? "rgba(0, 255, 136, 0.1)"
-                        : "rgba(255, 71, 87, 0.1)",
-                    border:
-                      result === "correct"
-                        ? "1px solid rgba(0, 255, 136, 0.3)"
-                        : "1px solid rgba(255, 71, 87, 0.3)",
-                    color: result === "correct" ? "#00ff88" : "#ff4757",
-                    textAlign: "center",
-                  }}
-                >
-                  {result === "correct"
-                    ? "✅ Correct!"
-                    : `❌ Incorrect. The answer is ${answer}`}
+              <form onSubmit={checkAnswer}>
+                <div style={{ marginBottom: "16px" }}>
+                  <label
+                    className="ios-caption"
+                    style={{ display: "block", marginBottom: "8px" }}
+                  >
+                    Question
+                  </label>
+                  <div
+                    style={{
+                      fontSize: "32px",
+                      fontWeight: "600",
+                      textAlign: "center",
+                      padding: "16px",
+                      background: "rgba(0, 255, 255, 0.1)",
+                      borderRadius: "12px",
+                      marginBottom: "16px",
+                    }}
+                  >
+                    {question}
+                  </div>
                 </div>
-              )}
 
-              <div style={{ display: "flex", gap: "12px" }}>
-                <button
-                  type="button"
-                  onClick={endChallenge}
-                  className="ios-button secondary"
-                  style={{ flex: 1 }}
-                >
-                  Stop
-                </button>
-                <button
-                  type="submit"
-                  className="ios-button"
-                  style={{ flex: 1 }}
-                >
-                  Submit
-                </button>
-              </div>
-            </form>
+                <div style={{ marginBottom: "24px" }}>
+                  <label
+                    className="ios-caption"
+                    style={{ display: "block", marginBottom: "8px" }}
+                  >
+                    Your Answer
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    inputMode="numeric"
+                    value={userAnswer}
+                    onChange={(e) => setUserAnswer(e.target.value)}
+                    className="ios-input"
+                    placeholder="Enter answer"
+                    required
+                    autoFocus
+                  />
+                </div>
+
+                {result && (
+                  <div
+                    style={{
+                      marginBottom: "16px",
+                      padding: "12px",
+                      borderRadius: "8px",
+                      background:
+                        result === "correct"
+                          ? "rgba(0, 255, 136, 0.1)"
+                          : "rgba(255, 71, 87, 0.1)",
+                      border:
+                        result === "correct"
+                          ? "1px solid rgba(0, 255, 136, 0.3)"
+                          : "1px solid rgba(255, 71, 87, 0.3)",
+                      color: result === "correct" ? "#00ff88" : "#ff4757",
+                      textAlign: "center",
+                    }}
+                  >
+                    {result === "correct"
+                      ? "✅ Correct!"
+                      : `❌ Incorrect. The answer is ${answer}`}
+                  </div>
+                )}
+
+                <div style={{ display: "flex", gap: "12px" }}>
+                  <button
+                    type="button"
+                    onClick={endChallenge}
+                    className="ios-button secondary"
+                    style={{ flex: 1 }}
+                  >
+                    Stop
+                  </button>
+                  <button
+                    type="submit"
+                    className="ios-button"
+                    style={{ flex: 1 }}
+                  >
+                    Submit
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     );
   }

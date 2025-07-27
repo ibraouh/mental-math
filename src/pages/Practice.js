@@ -458,7 +458,7 @@ export default function Practice() {
                       padding: "8px 12px",
                     }}
                   >
-                    Back to Settings
+                    Exit Practice
                   </button>
                 </div>
               </div>
@@ -471,7 +471,7 @@ export default function Practice() {
               className="ios-button secondary"
               style={{ width: "100%" }}
             >
-              Back to Settings
+              Exit Practice
             </button>
           </div>
         </>
@@ -579,7 +579,7 @@ export default function Practice() {
                     padding: "8px 12px",
                   }}
                 >
-                  Back to Settings
+                  Exit Practice
                 </button>
               </div>
             </div>
