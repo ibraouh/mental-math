@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { updateUserStats, addWrongAnswer } from "../services/database";
 import LockedPage from "../components/LockedPage";
@@ -64,6 +64,17 @@ export default function Learn() {
   const [total, setTotal] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [result, setResult] = useState(null);
+
+  // Keep input field focused to maintain keyboard activation
+  useEffect(() => {
+    if (selectedDrill && question) {
+      const inputField = document.querySelector('input[type="number"]');
+      if (inputField) {
+        inputField.focus();
+      }
+    }
+  }, [selectedDrill, question, result]);
 
   // If user is not authenticated, show locked page
   if (!user) {
@@ -160,6 +171,7 @@ export default function Learn() {
     setQuestion(`${num1} ${operation} ${num2}`);
     setAnswer(result.toString());
     setUserAnswer("");
+    setResult(null);
   };
 
   const startDrill = (drillType) => {
@@ -173,9 +185,12 @@ export default function Learn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setTotal(total + 1);
+    if (!userAnswer.trim()) return;
 
     const isCorrect = parseFloat(userAnswer) === parseFloat(answer);
+    setResult(isCorrect ? "correct" : "incorrect");
+    setTotal(total + 1);
+
     if (isCorrect) {
       setScore(score + 1);
     }
@@ -196,7 +211,12 @@ export default function Learn() {
       console.error("Error saving progress:", error);
     }
 
-    generateDrillQuestion(selectedDrill);
+    // Auto-advance for correct answers after a short delay
+    if (isCorrect) {
+      setTimeout(() => {
+        generateDrillQuestion(selectedDrill);
+      }, 800);
+    }
   };
 
   const backToDrills = () => {
@@ -316,7 +336,7 @@ export default function Learn() {
                   className="ios-button secondary"
                   style={{ width: "100%", marginBottom: "16px" }}
                 >
-                  End Drill
+                  Exit
                 </button>
                 <div style={{ textAlign: "center", marginBottom: "24px" }}>
                   <div
@@ -391,15 +411,61 @@ export default function Learn() {
                     />
                   </div>
 
+                  {result === "incorrect" && (
+                    <div
+                      style={{
+                        marginBottom: "16px",
+                        padding: "6px 12px",
+                        borderRadius: "8px",
+                        background: "rgba(255, 71, 87, 0.1)",
+                        border: "1px solid rgba(255, 71, 87, 0.3)",
+                        color: "#ff4757",
+                        textAlign: "center",
+                        fontSize: "14px",
+                      }}
+                    >
+                      ❌ Incorrect. The answer is {answer}
+                    </div>
+                  )}
+                  {result === "correct" && (
+                    <div
+                      style={{
+                        marginBottom: "16px",
+                        padding: "6px 12px",
+                        borderRadius: "8px",
+                        background: "rgba(0, 255, 136, 0.1)",
+                        border: "1px solid rgba(0, 255, 136, 0.3)",
+                        color: "#00ff88",
+                        textAlign: "center",
+                        fontSize: "14px",
+                      }}
+                    >
+                      ✅ Correct!
+                    </div>
+                  )}
                   <button
-                    type={userAnswer.trim() ? "submit" : "button"}
+                    type={
+                      result === "incorrect"
+                        ? "button"
+                        : userAnswer.trim()
+                        ? "submit"
+                        : "button"
+                    }
                     onClick={
-                      userAnswer.trim() ? undefined : generateDrillQuestion
+                      result === "incorrect"
+                        ? () => generateDrillQuestion(selectedDrill)
+                        : userAnswer.trim()
+                        ? undefined
+                        : generateDrillQuestion
                     }
                     className="ios-button"
                     style={{ width: "100%" }}
                   >
-                    {userAnswer.trim() ? "Check Answer" : "Skip"}
+                    {result === "incorrect"
+                      ? "Next"
+                      : userAnswer.trim()
+                      ? "Check"
+                      : "Skip"}
                   </button>
                 </form>
               </div>
@@ -462,26 +528,72 @@ export default function Learn() {
                   />
                 </div>
 
+                {result === "incorrect" && (
+                  <div
+                    style={{
+                      marginBottom: "16px",
+                      padding: "6px 12px",
+                      borderRadius: "8px",
+                      background: "rgba(255, 71, 87, 0.1)",
+                      border: "1px solid rgba(255, 71, 87, 0.3)",
+                      color: "#ff4757",
+                      textAlign: "center",
+                      fontSize: "14px",
+                    }}
+                  >
+                    ❌ Incorrect. The answer is {answer}
+                  </div>
+                )}
+                {result === "correct" && (
+                  <div
+                    style={{
+                      marginBottom: "16px",
+                      padding: "3px 12px",
+                      borderRadius: "8px",
+                      background: "rgba(0, 255, 136, 0.1)",
+                      border: "1px solid rgba(0, 255, 136, 0.3)",
+                      color: "#00ff88",
+                      textAlign: "center",
+                      fontSize: "14px",
+                    }}
+                  >
+                    ✅ Correct!
+                  </div>
+                )}
                 <div
                   style={{ display: "flex", gap: "12px", marginBottom: "16px" }}
                 >
-                  <button
-                    type={userAnswer.trim() ? "submit" : "button"}
-                    onClick={
-                      userAnswer.trim() ? undefined : generateDrillQuestion
-                    }
-                    className="ios-button"
-                    style={{ flex: 1 }}
-                  >
-                    {userAnswer.trim() ? "Check Answer" : "Skip"}
-                  </button>
-
                   <button
                     onClick={backToDrills}
                     className="ios-button secondary"
                     style={{ flex: 1 }}
                   >
-                    End Drill
+                    Exit
+                  </button>
+
+                  <button
+                    type={
+                      result === "incorrect"
+                        ? "button"
+                        : userAnswer.trim()
+                        ? "submit"
+                        : "button"
+                    }
+                    onClick={
+                      result === "incorrect"
+                        ? () => generateDrillQuestion(selectedDrill)
+                        : userAnswer.trim()
+                        ? undefined
+                        : generateDrillQuestion
+                    }
+                    className="ios-button"
+                    style={{ flex: 1 }}
+                  >
+                    {result === "incorrect"
+                      ? "Next"
+                      : userAnswer.trim()
+                      ? "Check"
+                      : "Skip"}
                   </button>
                 </div>
               </form>
