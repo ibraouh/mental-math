@@ -3,7 +3,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useColorScheme } from "../contexts/ColorSchemeContext";
 import { updateProfile } from "../services/database";
 
-export default function Profile() {
+const Profile = React.memo(() => {
   const {
     user,
     profile,
@@ -666,4 +666,6 @@ export default function Profile() {
       </div>
     </div>
   );
-}
+});
+
+export default Profile;

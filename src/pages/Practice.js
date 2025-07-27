@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { IoAdd, IoRemove, IoClose, IoRemoveOutline } from "react-icons/io5";
 import { generateQuestionWithOperation } from "../utils/questionGenerator";
 
-export default function Practice() {
+const Practice = React.memo(() => {
   const [leftDigits, setLeftDigits] = useState(2);
   const [rightDigits, setRightDigits] = useState(2);
   const [selectedOperations, setSelectedOperations] = useState(["addition"]);
@@ -303,4 +303,6 @@ export default function Practice() {
       )}
     </div>
   );
-}
+});
+
+export default Practice;

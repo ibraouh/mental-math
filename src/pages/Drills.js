@@ -54,7 +54,7 @@ const DRILLS = [
   },
 ];
 
-export default function Drills() {
+const Drills = React.memo(() => {
   const { user } = useAuth();
   const [selectedDrill, setSelectedDrill] = useState(null);
   const [question, setQuestion] = useState("");
@@ -686,4 +686,6 @@ export default function Drills() {
       </div>
     </div>
   );
-}
+});
+
+export default Drills;

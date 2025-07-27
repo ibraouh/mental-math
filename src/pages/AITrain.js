@@ -2,7 +2,7 @@ import React from "react";
 import { useAuth } from "../contexts/AuthContext";
 import LockedPage from "../components/LockedPage";
 
-export default function AITrain() {
+const AITrain = React.memo(() => {
   const { user } = useAuth();
 
   // If user is not authenticated, show locked page
@@ -82,4 +82,6 @@ export default function AITrain() {
       </div>
     </div>
   );
-}
+});
+
+export default AITrain;

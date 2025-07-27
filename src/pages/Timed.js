@@ -3,7 +3,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { updateUserStats, addWrongAnswer } from "../services/database";
 import LockedPage from "../components/LockedPage";
 
-export default function Timed() {
+const Timed = React.memo(() => {
   const { user } = useAuth();
   const [time, setTime] = useState(60);
   const [difficulty, setDifficulty] = useState("easy");
@@ -635,4 +635,6 @@ export default function Timed() {
       </div>
     </div>
   );
-}
+});
+
+export default Timed;
