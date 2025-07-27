@@ -1,9 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { updateProfile } from "../services/database";
 
 export default function Profile() {
-  const { user, profile, stats, signInWithGoogle, signOut } = useAuth();
+  const {
+    user,
+    profile,
+    stats,
+    signInWithGoogle,
+    signUpWithEmail,
+    signInWithEmail,
+    signOut,
+    refreshUserData,
+  } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editDisplayName, setEditDisplayName] = useState("");
+  const [editProfileIcon, setEditProfileIcon] = useState("");
+  const [editError, setEditError] = useState("");
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
@@ -18,6 +37,83 @@ export default function Profile() {
       alert("An error occurred during Google sign in");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleEmailAuth = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setAuthError("");
+
+    try {
+      const { error } = isSignUp
+        ? await signUpWithEmail(email, password, username)
+        : await signInWithEmail(email, password);
+
+      if (error) {
+        setAuthError(error.message);
+      }
+    } catch (error) {
+      setAuthError("An error occurred during authentication");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEditProfile = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setEditError("");
+
+    try {
+      const { error } = await updateProfile(user.uid, {
+        display_name: editDisplayName,
+        profile_icon: editProfileIcon,
+      });
+
+      if (error) {
+        setEditError("Failed to update profile");
+      } else {
+        setIsEditing(false);
+        await refreshUserData();
+      }
+    } catch (error) {
+      setEditError("An error occurred while updating profile");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const startEditing = () => {
+    setEditDisplayName(profile?.display_name || user.displayName || "");
+    setEditProfileIcon(profile?.profile_icon || "🧮");
+    setIsEditing(true);
+    setEditError("");
+  };
+
+  const cancelEditing = () => {
+    setIsEditing(false);
+    setEditDisplayName("");
+    setEditProfileIcon("");
+    setEditError("");
+  };
+
+  const getMembershipDuration = () => {
+    if (!profile?.created_at) return "New member";
+
+    const created = new Date(profile.created_at);
+    const now = new Date();
+    const diffTime = Math.abs(now - created);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 30) {
+      return `Member for ${diffDays} day${diffDays === 1 ? "" : "s"}`;
+    } else if (diffDays < 365) {
+      const months = Math.floor(diffDays / 30);
+      return `Member for ${months} month${months === 1 ? "" : "s"}`;
+    } else {
+      const years = Math.floor(diffDays / 365);
+      return `Member for ${years} year${years === 1 ? "" : "s"}`;
     }
   };
 
@@ -47,44 +143,135 @@ export default function Profile() {
   if (!user) {
     return (
       <div className="ios-container ios-fade-in">
-        <h1 className="ios-title">Sign In</h1>
+        <h1 className="ios-title">{isSignUp ? "Sign Up" : "Sign In"}</h1>
         <p className="ios-subtitle">Access your math progress</p>
 
         <div className="ios-section">
           <div className="ios-card">
-            <div style={{ textAlign: "center", marginBottom: "24px" }}>
-              <div
-                style={{
-                  width: "80px",
-                  height: "80px",
-                  borderRadius: "50%",
-                  background: "linear-gradient(135deg, #4285F4, #34A853)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  margin: "0 auto 16px auto",
-                  fontSize: "32px",
-                }}
-              >
-                🔐
+            <form onSubmit={handleEmailAuth}>
+              {isSignUp && (
+                <div style={{ marginBottom: "16px" }}>
+                  <label
+                    className="ios-caption"
+                    style={{ display: "block", marginBottom: "8px" }}
+                  >
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="ios-input"
+                    placeholder="Enter username"
+                    required={isSignUp}
+                  />
+                </div>
+              )}
+
+              <div style={{ marginBottom: "16px" }}>
+                <label
+                  className="ios-caption"
+                  style={{ display: "block", marginBottom: "8px" }}
+                >
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="ios-input"
+                  placeholder="Enter email"
+                  required
+                />
               </div>
-              <p
-                className="ios-body"
-                style={{ color: "#8E8E93", marginBottom: "24px" }}
+
+              <div style={{ marginBottom: "24px" }}>
+                <label
+                  className="ios-caption"
+                  style={{ display: "block", marginBottom: "8px" }}
+                >
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="ios-input"
+                  placeholder="Enter password"
+                  required
+                />
+              </div>
+
+              {authError && (
+                <div
+                  style={{
+                    marginBottom: "16px",
+                    padding: "12px",
+                    borderRadius: "8px",
+                    background: "rgba(255, 71, 87, 0.1)",
+                    border: "1px solid rgba(255, 71, 87, 0.3)",
+                    color: "#ff4757",
+                    textAlign: "center",
+                  }}
+                >
+                  {authError}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="ios-button"
+                style={{ width: "100%", marginBottom: "16px" }}
+                disabled={isLoading}
               >
-                Sign in with your Google account to track your math progress and
-                unlock all features.
+                {isLoading ? "Processing..." : isSignUp ? "Sign Up" : "Sign In"}
+              </button>
+            </form>
+
+            <div style={{ textAlign: "center", marginBottom: "16px" }}>
+              <p className="ios-caption" style={{ color: "#8E8E93" }}>
+                or
               </p>
             </div>
 
             <button
               onClick={handleGoogleSignIn}
-              className="ios-button"
-              style={{ width: "100%" }}
+              className="ios-button secondary"
+              style={{ width: "100%", marginBottom: "16px" }}
               disabled={isLoading}
             >
-              {isLoading ? "Signing In..." : "Continue with Google"}
+              Continue with Google
             </button>
+
+            <div style={{ textAlign: "center" }}>
+              <p className="ios-caption" style={{ color: "#8E8E93" }}>
+                {isSignUp
+                  ? "Already have an account? "
+                  : "Don't have an account? "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSignUp(!isSignUp);
+                    setAuthError("");
+                    setEmail("");
+                    setPassword("");
+                    setUsername("");
+                  }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#00ffff",
+                    cursor: "pointer",
+                    fontSize: "inherit",
+                    fontFamily: "inherit",
+                    padding: 0,
+                    margin: 0,
+                  }}
+                >
+                  {isSignUp ? "Sign In" : "Sign Up"}
+                </button>
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -98,42 +285,152 @@ export default function Profile() {
       <p className="ios-subtitle"></p>
 
       <div className="ios-section">
-        <div className="ios-card">
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "16px",
-            }}
-          >
+        <div
+          className="ios-card"
+          style={{ cursor: "pointer" }}
+          onClick={!isEditing ? startEditing : undefined}
+        >
+          {!isEditing ? (
             <div
               style={{
-                width: "60px",
-                height: "60px",
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #00ffff, #0080ff)",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                fontSize: "32px",
-                flexShrink: 0,
+                gap: "16px",
               }}
             >
-              {profile?.profile_icon || "🧮"}
-            </div>
-
-            <div style={{ flex: 1 }}>
-              <h3 className="ios-heading" style={{ marginBottom: "4px" }}>
-                {profile?.display_name || user.displayName || "Math Learner"}
-              </h3>
-              <p
-                className="ios-body"
-                style={{ color: "#8E8E93", marginBottom: "4px" }}
+              <div
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #00ffff, #0080ff)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "32px",
+                  flexShrink: 0,
+                }}
               >
-                {user.email}
-              </p>
+                {profile?.profile_icon || "🧮"}
+              </div>
+
+              <div style={{ flex: 1 }}>
+                <h3 className="ios-heading" style={{ marginBottom: "4px" }}>
+                  {profile?.display_name || user.displayName || "Math Learner"}
+                </h3>
+                <p
+                  className="ios-body"
+                  style={{ color: "#8E8E93", marginBottom: "4px" }}
+                >
+                  {user.email}
+                </p>
+                <p
+                  className="ios-caption"
+                  style={{ color: "#8E8E93", fontSize: "12px" }}
+                >
+                  {getMembershipDuration()}
+                </p>
+              </div>
             </div>
-          </div>
+          ) : (
+            <form onSubmit={handleEditProfile}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "16px",
+                  marginBottom: "16px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "60px",
+                    height: "60px",
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, #00ffff, #0080ff)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "32px",
+                    flexShrink: 0,
+                  }}
+                >
+                  {editProfileIcon}
+                </div>
+
+                <div style={{ flex: 1 }}>
+                  <div style={{ marginBottom: "8px" }}>
+                    <label
+                      className="ios-caption"
+                      style={{ display: "block", marginBottom: "4px" }}
+                    >
+                      Display Name
+                    </label>
+                    <input
+                      type="text"
+                      value={editDisplayName}
+                      onChange={(e) => setEditDisplayName(e.target.value)}
+                      className="ios-input"
+                      placeholder="Enter display name"
+                      required
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: "8px" }}>
+                    <label
+                      className="ios-caption"
+                      style={{ display: "block", marginBottom: "4px" }}
+                    >
+                      Profile Icon
+                    </label>
+                    <input
+                      type="text"
+                      value={editProfileIcon}
+                      onChange={(e) => setEditProfileIcon(e.target.value)}
+                      className="ios-input"
+                      placeholder="Enter emoji (e.g., 🧮)"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {editError && (
+                <div
+                  style={{
+                    marginBottom: "16px",
+                    padding: "12px",
+                    borderRadius: "8px",
+                    background: "rgba(255, 71, 87, 0.1)",
+                    border: "1px solid rgba(255, 71, 87, 0.3)",
+                    color: "#ff4757",
+                    textAlign: "center",
+                  }}
+                >
+                  {editError}
+                </div>
+              )}
+
+              <div style={{ display: "flex", gap: "12px" }}>
+                <button
+                  type="button"
+                  onClick={cancelEditing}
+                  className="ios-button secondary"
+                  style={{ flex: 1 }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="ios-button"
+                  style={{ flex: 1 }}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Saving..." : "Save"}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
 

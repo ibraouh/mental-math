@@ -4,6 +4,9 @@ import {
   GoogleAuthProvider,
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
 } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import {
@@ -243,6 +246,34 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const signUpWithEmail = async (email, password, username) => {
+    try {
+      const result = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      // Update the user's display name
+      if (result.user) {
+        await updateProfile(result.user, {
+          displayName: username,
+        });
+      }
+      return { data: result, error: null };
+    } catch (error) {
+      return { data: null, error };
+    }
+  };
+
+  const signInWithEmail = async (email, password) => {
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      return { data: result, error: null };
+    } catch (error) {
+      return { data: null, error };
+    }
+  };
+
   const signOut = async () => {
     try {
       // Clear all caches immediately
@@ -265,6 +296,8 @@ export const AuthProvider = ({ children }) => {
     profile,
     stats,
     signInWithGoogle,
+    signUpWithEmail,
+    signInWithEmail,
     signOut,
     loading,
     refreshUserData,
