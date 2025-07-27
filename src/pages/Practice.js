@@ -15,6 +15,7 @@ export default function Practice() {
   const [correctCount, setCorrectCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [practiceStarted, setPracticeStarted] = useState(false);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
   const generateQuestion = useCallback(() => {
     let num1, num2, operation, result;
@@ -113,6 +114,36 @@ export default function Practice() {
       return () => clearTimeout(timer);
     }
   }, [result, generateQuestion]);
+
+  // Detect keyboard visibility
+  useEffect(() => {
+    const handleResize = () => {
+      const isKeyboard = window.innerHeight < window.outerHeight * 0.8;
+      setIsKeyboardOpen(isKeyboard);
+    };
+
+    const handleFocus = () => {
+      // Small delay to let the keyboard open
+      setTimeout(() => {
+        const isKeyboard = window.innerHeight < window.outerHeight * 0.8;
+        setIsKeyboardOpen(isKeyboard);
+      }, 300);
+    };
+
+    const handleBlur = () => {
+      setIsKeyboardOpen(false);
+    };
+
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("blur", handleBlur);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, []);
 
   const handleOperationChange = (operation) => {
     if (selectedOperations.includes(operation)) {
@@ -248,44 +279,60 @@ export default function Practice() {
   }
 
   return (
-    <div className="ios-container ios-fade-in">
-      <h1 className="ios-title">Practice</h1>
-      <p className="ios-subtitle">Free practice mode - no time limits</p>
+    <div
+      className="ios-container ios-fade-in"
+      style={{
+        paddingTop: isKeyboardOpen ? "10px" : "20px",
+        paddingBottom: isKeyboardOpen
+          ? "10px"
+          : "calc(env(safe-area-inset-bottom, 0px) + 83px)",
+        minHeight: isKeyboardOpen ? "auto" : "100vh",
+        justifyContent: isKeyboardOpen ? "flex-start" : "flex-start",
+      }}
+    >
+      {!isKeyboardOpen && (
+        <>
+          <h1 className="ios-title">Practice</h1>
+          <p className="ios-subtitle">Free practice mode - no time limits</p>
+        </>
+      )}
 
       <div className="ios-section">
         <div className="ios-card">
-          <div style={{ textAlign: "center", marginBottom: "24px" }}>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "16px",
-                marginBottom: "16px",
-              }}
-            >
-              <div style={{ textAlign: "center" }}>
-                <p className="ios-caption">Correct</p>
-                <p
-                  className="ios-body"
-                  style={{ fontSize: "24px", fontWeight: "600" }}
-                >
-                  {correctCount}
-                </p>
-              </div>
-              <div style={{ textAlign: "center" }}>
-                <p className="ios-caption">Accuracy</p>
-                <p
-                  className="ios-body"
-                  style={{ fontSize: "24px", fontWeight: "600" }}
-                >
-                  {accuracy}%
-                </p>
+          {!isKeyboardOpen && (
+            <div style={{ textAlign: "center", marginBottom: "24px" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "16px",
+                  marginBottom: "16px",
+                }}
+              >
+                <div style={{ textAlign: "center" }}>
+                  <p className="ios-caption">Correct</p>
+                  <p
+                    className="ios-body"
+                    style={{ fontSize: "24px", fontWeight: "600" }}
+                  >
+                    {correctCount}
+                  </p>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <p className="ios-caption">Accuracy</p>
+                  <p
+                    className="ios-body"
+                    style={{ fontSize: "24px", fontWeight: "600" }}
+                  >
+                    {accuracy}%
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           <form onSubmit={checkAnswer}>
-            <div style={{ marginBottom: "16px" }}>
+            <div style={{ marginBottom: isKeyboardOpen ? "12px" : "16px" }}>
               <label
                 className="ios-caption"
                 style={{ display: "block", marginBottom: "8px" }}
@@ -294,13 +341,13 @@ export default function Practice() {
               </label>
               <div
                 style={{
-                  fontSize: "32px",
+                  fontSize: isKeyboardOpen ? "24px" : "32px",
                   fontWeight: "600",
                   textAlign: "center",
-                  padding: "16px",
+                  padding: isKeyboardOpen ? "12px" : "16px",
                   background: "rgba(0, 255, 255, 0.1)",
                   borderRadius: "12px",
-                  marginBottom: "16px",
+                  marginBottom: isKeyboardOpen ? "12px" : "16px",
                 }}
               >
                 {question || 'Click "New Question" to start'}
