@@ -11,6 +11,7 @@ import Learn from "./pages/Learn";
 import AITrain from "./pages/AITrain";
 import Profile from "./pages/Profile";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ColorSchemeProvider } from "./contexts/ColorSchemeContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import "./App.css";
 
@@ -56,21 +57,23 @@ function TabBar() {
 function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <Router>
-          <div className="App">
-            <ScrollToTop />
-            <Routes>
-              <Route path="/" element={<Practice />} />
-              <Route path="/timed" element={<Timed />} />
-              <Route path="/drills" element={<Learn />} />
-              <Route path="/ai-train" element={<AITrain />} />
-              <Route path="/profile" element={<Profile />} />
-            </Routes>
-            <TabBar />
-          </div>
-        </Router>
-      </AuthProvider>
+      <ColorSchemeProvider>
+        <AuthProvider>
+          <Router>
+            <div className="App">
+              <ScrollToTop />
+              <Routes>
+                <Route path="/" element={<Practice />} />
+                <Route path="/timed" element={<Timed />} />
+                <Route path="/drills" element={<Learn />} />
+                <Route path="/ai-train" element={<AITrain />} />
+                <Route path="/profile" element={<Profile />} />
+              </Routes>
+              <TabBar />
+            </div>
+          </Router>
+        </AuthProvider>
+      </ColorSchemeProvider>
     </ErrorBoundary>
   );
 }

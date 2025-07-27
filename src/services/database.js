@@ -26,6 +26,7 @@ export const createProfile = async (userId, profileData) => {
     const defaultProfile = {
       display_name: profileData?.display_name || "Math Learner",
       profile_icon: profileData?.profile_icon || "🧮",
+      color_scheme: profileData?.color_scheme || "cyan",
       total_questions: 0,
       correct_answers: 0,
       level: 1,

@@ -15,6 +15,12 @@ import {
   calculateStats,
 } from "../services/database";
 
+// Import ColorSchemeContext to access color scheme functions
+let colorSchemeContext = null;
+export const setColorSchemeContext = (context) => {
+  colorSchemeContext = context;
+};
+
 const AuthContext = createContext({});
 
 export const useAuth = () => {
@@ -178,6 +184,11 @@ export const AuthProvider = ({ children }) => {
       const { data: profileData } = await getProfile(user.uid);
       setProfile(profileData);
       setCachedProfile(profileData);
+
+      // Apply user's color scheme preference if available
+      if (profileData?.color_scheme && colorSchemeContext) {
+        colorSchemeContext.changeColorScheme(profileData.color_scheme);
+      }
 
       // Calculate stats
       const { data: statsData } = await calculateStats(user.uid);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { useColorScheme } from "../contexts/ColorSchemeContext";
 import { updateProfile } from "../services/database";
 
 export default function Profile() {
@@ -13,6 +14,7 @@ export default function Profile() {
     signOut,
     refreshUserData,
   } = useAuth();
+  const { currentScheme, colorSchemes, changeColorScheme } = useColorScheme();
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
@@ -96,6 +98,33 @@ export default function Profile() {
     setEditDisplayName("");
     setEditProfileIcon("");
     setEditError("");
+  };
+
+  const handleColorSchemeChange = async (scheme) => {
+    setIsLoading(true);
+    try {
+      // Update local state immediately for instant feedback
+      changeColorScheme(scheme);
+
+      // Save to Firebase
+      const { error } = await updateProfile(user.uid, {
+        color_scheme: scheme,
+      });
+
+      if (error) {
+        console.error("Failed to save color scheme:", error);
+        // Revert to previous scheme if save failed
+        changeColorScheme(profile?.color_scheme || "cyan");
+      } else {
+        await refreshUserData();
+      }
+    } catch (error) {
+      console.error("Color scheme change error:", error);
+      // Revert to previous scheme if save failed
+      changeColorScheme(profile?.color_scheme || "cyan");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getMembershipDuration = () => {
@@ -303,7 +332,7 @@ export default function Profile() {
                   width: "60px",
                   height: "60px",
                   borderRadius: "50%",
-                  background: "linear-gradient(135deg, #00ffff, #0080ff)",
+                  background: colorSchemes[currentScheme].preview,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -347,7 +376,7 @@ export default function Profile() {
                     width: "60px",
                     height: "60px",
                     borderRadius: "50%",
-                    background: "linear-gradient(135deg, #00ffff, #0080ff)",
+                    background: colorSchemes[currentScheme].preview,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -375,23 +404,121 @@ export default function Profile() {
                       required
                     />
                   </div>
+                </div>
+              </div>
 
-                  <div style={{ marginBottom: "8px" }}>
-                    <label
-                      className="ios-caption"
-                      style={{ display: "block", marginBottom: "4px" }}
+              <div style={{ marginBottom: "16px" }}>
+                <label
+                  className="ios-caption"
+                  style={{ display: "block", marginBottom: "8px" }}
+                >
+                  Profile Icon
+                </label>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(6, 1fr)",
+                    gap: "8px",
+                  }}
+                >
+                  {[
+                    "🧮",
+                    "📐",
+                    "📊",
+                    "🔢",
+                    "⚡",
+                    "⭐",
+                    "🏆",
+                    "💡",
+                    "🚀",
+                    "🎨",
+                    "🌟",
+                    "🔬",
+                    "⚖️",
+                    "🎲",
+                  ].map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setEditProfileIcon(emoji)}
+                      style={{
+                        width: "100%",
+                        height: "40px",
+                        borderRadius: "8px",
+                        background:
+                          editProfileIcon === emoji
+                            ? "rgba(0, 255, 255, 0.2)"
+                            : "rgba(0, 0, 0, 0.05)",
+                        border:
+                          editProfileIcon === emoji
+                            ? "2px solid #00ffff"
+                            : "1px solid rgba(0, 0, 0, 0.1)",
+                        cursor: "pointer",
+                        fontSize: "20px",
+                        transition: "all 0.2s ease",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
                     >
-                      Profile Icon
-                    </label>
-                    <input
-                      type="text"
-                      value={editProfileIcon}
-                      onChange={(e) => setEditProfileIcon(e.target.value)}
-                      className="ios-input"
-                      placeholder="Enter emoji (e.g., 🧮)"
-                      required
-                    />
-                  </div>
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Color Scheme Selector - Only shown in edit mode */}
+              <div style={{ marginBottom: "16px" }}>
+                <label
+                  className="ios-caption"
+                  style={{ display: "block", marginBottom: "8px" }}
+                >
+                  Theme
+                </label>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  {Object.entries(colorSchemes).map(([key, scheme]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => handleColorSchemeChange(key)}
+                      disabled={isLoading}
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "8px",
+                        background: scheme.preview,
+                        border: "none",
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        position: "relative",
+                        boxSizing: "border-box",
+                        padding: 0,
+                        margin: 0,
+                        outline:
+                          currentScheme === key
+                            ? "2px solid var(--text-primary)"
+                            : "none",
+                        outlineOffset: "2px",
+                      }}
+                      title={scheme.name}
+                    >
+                      {currentScheme === key && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            color: "white",
+                            fontSize: "14px",
+                            textShadow: "0 0 2px rgba(0,0,0,0.8)",
+                          }}
+                        >
+                          ✓
+                        </div>
+                      )}
+                    </button>
+                  ))}
                 </div>
               </div>
 
