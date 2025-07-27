@@ -115,35 +115,30 @@ export default function Practice() {
     }
   }, [result, generateQuestion]);
 
-  // Detect keyboard visibility
+  // Detect input field focus for keyboard layout
   useEffect(() => {
-    const handleResize = () => {
-      const isKeyboard = window.innerHeight < window.outerHeight * 0.8;
-      setIsKeyboardOpen(isKeyboard);
-    };
-
     const handleFocus = () => {
-      // Small delay to let the keyboard open
-      setTimeout(() => {
-        const isKeyboard = window.innerHeight < window.outerHeight * 0.8;
-        setIsKeyboardOpen(isKeyboard);
-      }, 300);
+      setIsKeyboardOpen(true);
     };
 
     const handleBlur = () => {
       setIsKeyboardOpen(false);
     };
 
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("focus", handleFocus);
-    window.addEventListener("blur", handleBlur);
+    // Find the input field and add listeners
+    const inputField = document.querySelector('input[type="number"]');
+    if (inputField) {
+      inputField.addEventListener("focus", handleFocus);
+      inputField.addEventListener("blur", handleBlur);
+    }
 
     return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("focus", handleFocus);
-      window.removeEventListener("blur", handleBlur);
+      if (inputField) {
+        inputField.removeEventListener("focus", handleFocus);
+        inputField.removeEventListener("blur", handleBlur);
+      }
     };
-  }, []);
+  }, [practiceStarted]); // Re-run when practice starts to find the new input field
 
   const handleOperationChange = (operation) => {
     if (selectedOperations.includes(operation)) {
