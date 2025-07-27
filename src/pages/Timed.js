@@ -36,6 +36,17 @@ export default function Timed() {
     return () => clearInterval(interval);
   }, [isActive, timeLeft, endChallenge]);
 
+  // Auto-submit when user types an answer
+  useEffect(() => {
+    if (isActive && userAnswer.trim() && !result) {
+      const timer = setTimeout(() => {
+        checkAnswer({ preventDefault: () => {} });
+      }, 500); // Small delay to allow user to finish typing
+
+      return () => clearTimeout(timer);
+    }
+  }, [userAnswer, isActive, result]);
+
   // Authentication gate
   if (!user) {
     return (
@@ -195,7 +206,6 @@ export default function Timed() {
     if (!userAnswer.trim()) return;
 
     const isCorrect = parseFloat(userAnswer) === parseFloat(answer);
-    setResult(isCorrect ? "correct" : "incorrect");
     setTotalCount(totalCount + 1);
 
     if (isCorrect) {
@@ -218,7 +228,7 @@ export default function Timed() {
       console.error("Error saving progress:", error);
     }
 
-    // Generate next question
+    // Generate next question immediately
     generateQuestion();
   };
 
@@ -416,30 +426,6 @@ export default function Timed() {
                     />
                   </div>
 
-                  {result && (
-                    <div
-                      style={{
-                        marginBottom: "16px",
-                        padding: "12px",
-                        borderRadius: "8px",
-                        background:
-                          result === "correct"
-                            ? "rgba(0, 255, 136, 0.1)"
-                            : "rgba(255, 71, 87, 0.1)",
-                        border:
-                          result === "correct"
-                            ? "1px solid rgba(0, 255, 136, 0.3)"
-                            : "1px solid rgba(255, 71, 87, 0.3)",
-                        color: result === "correct" ? "#00ff88" : "#ff4757",
-                        textAlign: "center",
-                      }}
-                    >
-                      {result === "correct"
-                        ? "✅ Correct!"
-                        : `❌ Incorrect. The answer is ${answer}`}
-                    </div>
-                  )}
-
                   <div style={{ display: "flex", gap: "12px" }}>
                     <button
                       type="button"
@@ -465,6 +451,7 @@ export default function Timed() {
           // Compact layout when keyboard is open
           <div
             style={{
+              marginTop: "40px",
               width: "100%",
               padding: "0 16px",
               display: "flex",
@@ -475,7 +462,12 @@ export default function Timed() {
             }}
           >
             <div className="ios-card">
-              <div style={{ textAlign: "center", marginBottom: "0px" }}>
+              <div
+                style={{
+                  textAlign: "center",
+                  marginBottom: "0px",
+                }}
+              >
                 <div
                   style={{
                     fontSize: "48px",
@@ -529,30 +521,6 @@ export default function Timed() {
                     autoFocus
                   />
                 </div>
-
-                {result && (
-                  <div
-                    style={{
-                      marginBottom: "16px",
-                      padding: "12px",
-                      borderRadius: "8px",
-                      background:
-                        result === "correct"
-                          ? "rgba(0, 255, 136, 0.1)"
-                          : "rgba(255, 71, 87, 0.1)",
-                      border:
-                        result === "correct"
-                          ? "1px solid rgba(0, 255, 136, 0.3)"
-                          : "1px solid rgba(255, 71, 87, 0.3)",
-                      color: result === "correct" ? "#00ff88" : "#ff4757",
-                      textAlign: "center",
-                    }}
-                  >
-                    {result === "correct"
-                      ? "✅ Correct!"
-                      : `❌ Incorrect. The answer is ${answer}`}
-                  </div>
-                )}
 
                 <div style={{ display: "flex", gap: "12px" }}>
                   <button
