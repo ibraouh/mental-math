@@ -115,30 +115,10 @@ export default function Practice() {
     }
   }, [result, generateQuestion]);
 
-  // Detect input field focus for keyboard layout
-  useEffect(() => {
-    const handleFocus = () => {
-      setIsKeyboardOpen(true);
-    };
-
-    const handleBlur = () => {
-      setIsKeyboardOpen(false);
-    };
-
-    // Find the input field and add listeners
-    const inputField = document.querySelector('input[type="number"]');
-    if (inputField) {
-      inputField.addEventListener("focus", handleFocus);
-      inputField.addEventListener("blur", handleBlur);
-    }
-
-    return () => {
-      if (inputField) {
-        inputField.removeEventListener("focus", handleFocus);
-        inputField.removeEventListener("blur", handleBlur);
-      }
-    };
-  }, [practiceStarted]); // Re-run when practice starts to find the new input field
+  // Simple keyboard toggle - user can manually switch layouts
+  const toggleKeyboardLayout = () => {
+    setIsKeyboardOpen(!isKeyboardOpen);
+  };
 
   const handleOperationChange = (operation) => {
     if (selectedOperations.includes(operation)) {
@@ -382,7 +362,13 @@ export default function Practice() {
                   </div>
                 )}
 
-                <div style={{ display: "flex", gap: "12px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "12px",
+                    flexDirection: "column",
+                  }}
+                >
                   <button
                     type={
                       result
@@ -407,6 +393,19 @@ export default function Practice() {
                       ? "Check Answer"
                       : "Skip"}
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={toggleKeyboardLayout}
+                    className="ios-button secondary"
+                    style={{
+                      width: "100%",
+                      fontSize: "15px",
+                      padding: "8px 12px",
+                    }}
+                  >
+                    {isKeyboardOpen ? "Normal Layout" : "Compact Layout"}
+                  </button>
                 </div>
               </form>
             </div>
@@ -423,20 +422,10 @@ export default function Practice() {
           </div>
         </>
       ) : (
-        // Compact layout when keyboard is open - matches the image
-        <div
-          style={{
-            width: "100%",
-            padding: "0 16px",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "flex-start",
-            height: "100vh",
-            paddingTop: "20px",
-          }}
-        >
-          <div className="ios-card" style={{ marginBottom: "16px" }}>
-            <div style={{ textAlign: "center", marginBottom: "16px" }}>
+        // Compact layout when keyboard is open
+        <div className="ios-section">
+          <div className="ios-card">
+            <div style={{ textAlign: "center", marginBottom: "24px" }}>
               <div
                 style={{
                   display: "grid",
@@ -449,7 +438,7 @@ export default function Practice() {
                   <p className="ios-caption">Correct</p>
                   <p
                     className="ios-body"
-                    style={{ fontSize: "20px", fontWeight: "600" }}
+                    style={{ fontSize: "24px", fontWeight: "600" }}
                   >
                     {correctCount}
                   </p>
@@ -458,7 +447,7 @@ export default function Practice() {
                   <p className="ios-caption">Accuracy</p>
                   <p
                     className="ios-body"
-                    style={{ fontSize: "20px", fontWeight: "600" }}
+                    style={{ fontSize: "24px", fontWeight: "600" }}
                   >
                     {accuracy}%
                   </p>
@@ -466,84 +455,108 @@ export default function Practice() {
               </div>
             </div>
 
-            <div style={{ marginBottom: "12px" }}>
-              <label
-                className="ios-caption"
-                style={{ display: "block", marginBottom: "6px" }}
-              >
-                Question
-              </label>
+            <form onSubmit={checkAnswer}>
+              <div style={{ marginBottom: "16px" }}>
+                <label
+                  className="ios-caption"
+                  style={{ display: "block", marginBottom: "8px" }}
+                >
+                  Question
+                </label>
+                <div
+                  style={{
+                    fontSize: "32px",
+                    fontWeight: "600",
+                    textAlign: "center",
+                    padding: "16px",
+                    background: "rgba(0, 255, 255, 0.1)",
+                    borderRadius: "12px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  {question || 'Click "New Question" to start'}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: "24px" }}>
+                <label
+                  className="ios-caption"
+                  style={{ display: "block", marginBottom: "8px" }}
+                >
+                  Your Answer
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  inputMode="numeric"
+                  value={userAnswer}
+                  onChange={(e) => setUserAnswer(e.target.value)}
+                  className="ios-input"
+                  placeholder="Enter answer"
+                  disabled={!question}
+                  required
+                  autoFocus
+                />
+              </div>
+
+              {result === "incorrect" && (
+                <div
+                  style={{
+                    marginBottom: "16px",
+                    padding: "12px",
+                    borderRadius: "8px",
+                    background: "rgba(255, 71, 87, 0.1)",
+                    border: "1px solid rgba(255, 71, 87, 0.3)",
+                    color: "#ff4757",
+                    textAlign: "center",
+                  }}
+                >
+                  ❌ Incorrect. The answer is {answer}
+                </div>
+              )}
+
               <div
                 style={{
-                  fontSize: "24px",
-                  fontWeight: "600",
-                  textAlign: "center",
-                  padding: "12px",
-                  background: "rgba(0, 255, 255, 0.1)",
-                  borderRadius: "12px",
-                  marginBottom: "12px",
+                  display: "flex",
+                  gap: "12px",
+                  flexDirection: "column",
                 }}
               >
-                {question || 'Click "New Question" to start'}
+                <button
+                  type={
+                    result ? "button" : userAnswer.trim() ? "submit" : "button"
+                  }
+                  onClick={
+                    result
+                      ? generateQuestion
+                      : userAnswer.trim()
+                      ? undefined
+                      : generateQuestion
+                  }
+                  className="ios-button"
+                  style={{ width: "100%" }}
+                >
+                  {result
+                    ? "Next Question"
+                    : userAnswer.trim()
+                    ? "Check Answer"
+                    : "Skip"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={toggleKeyboardLayout}
+                  className="ios-button secondary"
+                  style={{
+                    width: "100%",
+                    fontSize: "15px",
+                    padding: "8px 12px",
+                  }}
+                >
+                  {isKeyboardOpen ? "Normal Layout" : "Compact Layout"}
+                </button>
               </div>
-            </div>
-
-            <div style={{ marginBottom: "16px" }}>
-              <label
-                className="ios-caption"
-                style={{ display: "block", marginBottom: "6px" }}
-              >
-                Your Answer
-              </label>
-              <input
-                type="number"
-                step="any"
-                inputMode="numeric"
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                className="ios-input"
-                placeholder="Enter answer"
-                disabled={!question}
-                required
-                autoFocus
-              />
-            </div>
-
-            {result === "incorrect" && (
-              <div
-                style={{
-                  marginBottom: "12px",
-                  padding: "8px",
-                  borderRadius: "8px",
-                  background: "rgba(255, 71, 87, 0.1)",
-                  border: "1px solid rgba(255, 71, 87, 0.3)",
-                  color: "#ff4757",
-                  textAlign: "center",
-                  fontSize: "12px",
-                }}
-              >
-                ❌ Incorrect. The answer is {answer}
-              </div>
-            )}
-
-            <button
-              type={result ? "button" : userAnswer.trim() ? "submit" : "button"}
-              onClick={
-                result
-                  ? generateQuestion
-                  : userAnswer.trim()
-                  ? undefined
-                  : generateQuestion
-              }
-              className="ios-button"
-              style={{ width: "100%" }}
-            >
-              {result
-                ? "Next Question"
-                : userAnswer.trim()
-                ? "Check Answer"
-                : "Skip"}
-            </button>
+            </form>
           </div>
         </div>
       )}
