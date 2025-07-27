@@ -169,7 +169,7 @@ export default function Practice() {
     generateQuestion,
   ]);
 
-  // Simple keyboard toggle - user can manually switch layouts
+  // Layout toggle function (kept for potential future use)
   const toggleKeyboardLayout = () => {
     setIsKeyboardOpen(!isKeyboardOpen);
   };
@@ -189,11 +189,13 @@ export default function Practice() {
 
   const startPractice = () => {
     setPracticeStarted(true);
+    setIsKeyboardOpen(true); // Automatically switch to compact layout
     generateQuestion();
   };
 
   const resetPractice = () => {
     setPracticeStarted(false);
+    setIsKeyboardOpen(false); // Return to normal layout
     setQuestion("");
     setAnswer("");
     setUserAnswer("");
@@ -450,7 +452,7 @@ export default function Practice() {
 
                   <button
                     type="button"
-                    onClick={toggleKeyboardLayout}
+                    onClick={resetPractice}
                     className="ios-button secondary"
                     style={{
                       width: "100%",
@@ -458,7 +460,7 @@ export default function Practice() {
                       padding: "8px 12px",
                     }}
                   >
-                    {isKeyboardOpen ? "Normal Layout" : "Compact Layout"}
+                    Back to Settings
                   </button>
                 </div>
               </form>
@@ -583,7 +585,7 @@ export default function Practice() {
 
                 <button
                   type="button"
-                  onClick={toggleKeyboardLayout}
+                  onClick={resetPractice}
                   className="ios-button secondary"
                   style={{
                     width: "100%",
@@ -591,7 +593,7 @@ export default function Practice() {
                     padding: "8px 12px",
                   }}
                 >
-                  {isKeyboardOpen ? "Normal Layout" : "Compact Layout"}
+                  Back to Settings
                 </button>
               </div>
             </form>
