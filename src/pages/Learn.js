@@ -197,10 +197,6 @@ export default function Learn() {
     generateDrillQuestion(selectedDrill);
   };
 
-  const endDrill = () => {
-    setShowResult(true);
-  };
-
   const backToDrills = () => {
     setSelectedDrill(null);
     setShowResult(false);

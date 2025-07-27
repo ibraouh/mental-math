@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { IoAdd, IoRemove, IoClose, IoRemoveOutline } from "react-icons/io5";
 import { useAuth } from "../contexts/AuthContext";
 import { updateUserStats, addWrongAnswer } from "../services/database";
 
 export default function Practice() {
   const { user } = useAuth();
-  const [difficulty, setDifficulty] = useState("easy");
   const [leftDigits, setLeftDigits] = useState(2);
   const [rightDigits, setRightDigits] = useState(2);
   const [selectedOperations, setSelectedOperations] = useState(["addition"]);
@@ -17,7 +16,7 @@ export default function Practice() {
   const [totalCount, setTotalCount] = useState(0);
   const [practiceStarted, setPracticeStarted] = useState(false);
 
-  const generateQuestion = () => {
+  const generateQuestion = useCallback(() => {
     let num1, num2, operation, result;
 
     // Generate numbers based on digit settings
@@ -72,7 +71,7 @@ export default function Practice() {
     setAnswer(result.toString());
     setUserAnswer("");
     setResult(null);
-  };
+  }, [leftDigits, rightDigits, selectedOperations]);
 
   const checkAnswer = async (e) => {
     e.preventDefault();
@@ -113,7 +112,7 @@ export default function Practice() {
       }, 200);
       return () => clearTimeout(timer);
     }
-  }, [result]);
+  }, [result, generateQuestion]);
 
   const handleOperationChange = (operation) => {
     if (selectedOperations.includes(operation)) {
@@ -251,6 +250,7 @@ export default function Practice() {
   return (
     <div className="ios-container ios-fade-in">
       <h1 className="ios-title">Practice</h1>
+      <p className="ios-subtitle">Free practice mode - no time limits</p>
 
       <div className="ios-section">
         <div className="ios-card">

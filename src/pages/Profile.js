@@ -95,6 +95,7 @@ export default function Profile() {
   return (
     <div className="ios-container ios-fade-in">
       <h1 className="ios-title">Profile</h1>
+      <p className="ios-subtitle"></p>
 
       <div className="ios-section">
         <div className="ios-card">
@@ -103,7 +104,6 @@ export default function Profile() {
               display: "flex",
               alignItems: "center",
               gap: "16px",
-              marginBottom: "24px",
             }}
           >
             <div
@@ -151,38 +151,77 @@ export default function Profile() {
               marginBottom: "16px",
             }}
           >
-            <div style={{ textAlign: "center" }}>
+            <div
+              style={{
+                background: "rgba(0, 255, 255, 0.1)",
+                borderRadius: "12px",
+                padding: "16px",
+                textAlign: "center",
+                border: "1px solid rgba(0, 255, 255, 0.2)",
+              }}
+            >
+              <div style={{ fontSize: "24px", marginBottom: "8px" }}>📊</div>
               <p className="ios-caption">Total Questions</p>
               <p
                 className="ios-body"
-                style={{ fontSize: "24px", fontWeight: "600" }}
+                style={{ fontSize: "20px", fontWeight: "600" }}
               >
                 {stats?.totalQuestions || 0}
               </p>
             </div>
-            <div style={{ textAlign: "center" }}>
+
+            <div
+              style={{
+                background: "rgba(0, 255, 136, 0.1)",
+                borderRadius: "12px",
+                padding: "16px",
+                textAlign: "center",
+                border: "1px solid rgba(0, 255, 136, 0.2)",
+              }}
+            >
+              <div style={{ fontSize: "24px", marginBottom: "8px" }}>✅</div>
               <p className="ios-caption">Correct Answers</p>
               <p
                 className="ios-body"
-                style={{ fontSize: "24px", fontWeight: "600" }}
+                style={{ fontSize: "20px", fontWeight: "600" }}
               >
                 {stats?.correctAnswers || 0}
               </p>
             </div>
-            <div style={{ textAlign: "center" }}>
+
+            <div
+              style={{
+                background: "rgba(255, 193, 7, 0.1)",
+                borderRadius: "12px",
+                padding: "16px",
+                textAlign: "center",
+                border: "1px solid rgba(255, 193, 7, 0.2)",
+              }}
+            >
+              <div style={{ fontSize: "24px", marginBottom: "8px" }}>🎯</div>
               <p className="ios-caption">Accuracy</p>
               <p
                 className="ios-body"
-                style={{ fontSize: "24px", fontWeight: "600" }}
+                style={{ fontSize: "20px", fontWeight: "600" }}
               >
                 {stats?.accuracy || 0}%
               </p>
             </div>
-            <div style={{ textAlign: "center" }}>
+
+            <div
+              style={{
+                background: "rgba(255, 71, 87, 0.1)",
+                borderRadius: "12px",
+                padding: "16px",
+                textAlign: "center",
+                border: "1px solid rgba(255, 71, 87, 0.2)",
+              }}
+            >
+              <div style={{ fontSize: "24px", marginBottom: "8px" }}>⭐</div>
               <p className="ios-caption">Level</p>
               <p
                 className="ios-body"
-                style={{ fontSize: "24px", fontWeight: "600" }}
+                style={{ fontSize: "20px", fontWeight: "600" }}
               >
                 {stats?.level || 1}
               </p>

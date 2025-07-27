@@ -232,7 +232,8 @@ export default function Timed() {
   if (showResults) {
     return (
       <div className="ios-container ios-fade-in">
-        <h1 className="ios-title">Challenge Complete!</h1>
+        <h1 className="ios-title">Timed Challenge</h1>
+        <p className="ios-subtitle"></p>
 
         <div className="ios-section">
           <div className="ios-card">
@@ -310,6 +311,7 @@ export default function Timed() {
     return (
       <div className="ios-container ios-fade-in">
         <h1 className="ios-title">Timed Challenge</h1>
+        <p className="ios-subtitle"></p>
 
         <div className="ios-section">
           <div className="ios-card">
