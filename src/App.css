@@ -336,50 +336,6 @@ html,
   margin-bottom: 32px;
 }
 
-.ios-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.ios-row .ios-select {
-  flex: 1;
-}
-
-/* iOS-style Status Indicators */
-.ios-success {
-  color: var(--success-color);
-  font-weight: 600;
-}
-
-.ios-error {
-  color: var(--error-color);
-  font-weight: 600;
-}
-
-.ios-info {
-  color: var(--primary-accent);
-  font-weight: 600;
-}
-
-/* iOS-style Spacing Utilities */
-.ios-spacing-xs {
-  margin-bottom: 8px;
-}
-.ios-spacing-sm {
-  margin-bottom: 16px;
-}
-.ios-spacing-md {
-  margin-bottom: 24px;
-}
-.ios-spacing-lg {
-  margin-bottom: 32px;
-}
-.ios-spacing-xl {
-  margin-bottom: 48px;
-}
-
 /* iOS-style Animation Classes */
 .ios-fade-in {
   animation: iosFadeIn 0.15s ease-out;
@@ -416,4 +372,15 @@ html,
   .tab-bar {
     background: rgba(15, 15, 35, 0.95);
   }
+}
+
+/* iOS-style Status Indicators */
+.ios-error {
+  color: var(--error-color);
+  font-weight: 600;
+}
+
+/* iOS-style Spacing Utilities */
+.ios-spacing-sm {
+  margin-bottom: 16px;
 }

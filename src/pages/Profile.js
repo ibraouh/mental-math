@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useColorScheme } from "../contexts/ColorSchemeContext";
 import { updateProfile } from "../services/database";

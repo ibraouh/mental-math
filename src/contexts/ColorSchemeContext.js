@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
 import { setColorSchemeContext } from "./AuthContext";
 
 const ColorSchemeContext = createContext();
@@ -15,51 +22,54 @@ export const ColorSchemeProvider = ({ children }) => {
   const [currentScheme, setCurrentScheme] = useState("cyan");
 
   // Available color schemes
-  const colorSchemes = {
-    cyan: {
-      name: "Cyan Dark",
-      description: "Classic cyan accent with dark blue background",
-      preview: "linear-gradient(135deg, #00ffff, #0080ff)",
-    },
-    purple: {
-      name: "Purple Dark",
-      description: "Elegant purple accent with dark purple background",
-      preview: "linear-gradient(135deg, #a855f7, #7c3aed)",
-    },
-    green: {
-      name: "Green Dark",
-      description: "Fresh green accent with dark green background",
-      preview: "linear-gradient(135deg, #10b981, #059669)",
-    },
-    orange: {
-      name: "Orange Dark",
-      description: "Warm orange accent with dark red background",
-      preview: "linear-gradient(135deg, #f97316, #ea580c)",
-    },
-    blue: {
-      name: "Blue Dark",
-      description: "Deep blue accent with navy background",
-      preview: "linear-gradient(135deg, #3b82f6, #1d4ed8)",
-    },
-    pink: {
-      name: "Pink Dark",
-      description: "Soft pink accent with dark magenta background",
-      preview: "linear-gradient(135deg, #ec4899, #be185d)",
-    },
-    neon: {
-      name: "Neon Dark",
-      description: "Subtle neon accents on dark background",
-      preview: "linear-gradient(135deg, #00d4ff, #0099cc)",
-    },
-    sunset: {
-      name: "Sunset Dark",
-      description: "Warm sunset colors on dark background",
-      preview: "linear-gradient(135deg, #f59e0b, #d97706)",
-    },
-  };
+  const colorSchemes = useMemo(
+    () => ({
+      cyan: {
+        name: "Cyan Dark",
+        description: "Classic cyan accent with dark blue background",
+        preview: "linear-gradient(135deg, #00ffff, #0080ff)",
+      },
+      purple: {
+        name: "Purple Dark",
+        description: "Elegant purple accent with dark purple background",
+        preview: "linear-gradient(135deg, #a855f7, #7c3aed)",
+      },
+      green: {
+        name: "Green Dark",
+        description: "Fresh green accent with dark green background",
+        preview: "linear-gradient(135deg, #10b981, #059669)",
+      },
+      orange: {
+        name: "Orange Dark",
+        description: "Warm orange accent with dark red background",
+        preview: "linear-gradient(135deg, #f97316, #ea580c)",
+      },
+      blue: {
+        name: "Blue Dark",
+        description: "Deep blue accent with navy background",
+        preview: "linear-gradient(135deg, #3b82f6, #1d4ed8)",
+      },
+      pink: {
+        name: "Pink Dark",
+        description: "Soft pink accent with dark magenta background",
+        preview: "linear-gradient(135deg, #ec4899, #be185d)",
+      },
+      neon: {
+        name: "Neon Dark",
+        description: "Subtle neon accents on dark background",
+        preview: "linear-gradient(135deg, #00d4ff, #0099cc)",
+      },
+      sunset: {
+        name: "Sunset Dark",
+        description: "Warm sunset colors on dark background",
+        preview: "linear-gradient(135deg, #f59e0b, #d97706)",
+      },
+    }),
+    []
+  );
 
   // Apply color scheme to CSS custom properties
-  const applyColorScheme = (scheme) => {
+  const applyColorScheme = useCallback((scheme) => {
     const root = document.documentElement;
 
     switch (scheme) {
@@ -460,27 +470,33 @@ export const ColorSchemeProvider = ({ children }) => {
         applyColorScheme("cyan");
         return;
     }
-  };
+  }, []);
 
   // Change color scheme
-  const changeColorScheme = (scheme) => {
-    setCurrentScheme(scheme);
-    applyColorScheme(scheme);
-    localStorage.setItem("colorScheme", scheme);
-  };
+  const changeColorScheme = useCallback(
+    (scheme) => {
+      setCurrentScheme(scheme);
+      applyColorScheme(scheme);
+      localStorage.setItem("colorScheme", scheme);
+    },
+    [applyColorScheme]
+  );
 
   // Initialize color scheme on mount
   useEffect(() => {
     const savedScheme = localStorage.getItem("colorScheme") || "cyan";
     setCurrentScheme(savedScheme);
     applyColorScheme(savedScheme);
-  }, []);
+  }, [applyColorScheme]);
 
-  const value = {
-    currentScheme,
-    colorSchemes,
-    changeColorScheme,
-  };
+  const value = useMemo(
+    () => ({
+      currentScheme,
+      colorSchemes,
+      changeColorScheme,
+    }),
+    [currentScheme, colorSchemes, changeColorScheme]
+  );
 
   // Provide context to AuthContext for integration
   useEffect(() => {

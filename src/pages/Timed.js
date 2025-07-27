@@ -24,49 +24,71 @@ export default function Timed() {
     setShowResults(true);
   }, []);
 
-  useEffect(() => {
-    let interval = null;
-    if (isActive && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft(timeLeft - 1);
-      }, 1000);
-    } else if (timeLeft === 0) {
-      endChallenge();
-    }
-    return () => clearInterval(interval);
-  }, [isActive, timeLeft, endChallenge]);
+  const generateQuestionWithOperation = useCallback(
+    (op) => {
+      let num1, num2, operationSymbol, result;
 
-  // Auto-submit when user types an answer
-  useEffect(() => {
-    if (isActive && userAnswer.trim() && !result) {
-      const isCorrect = parseFloat(userAnswer) === parseFloat(answer);
+      let maxNum, minNum;
 
-      if (isCorrect) {
-        // Immediately accept correct answers
-        checkAnswer({ preventDefault: () => {} });
-      } else {
-        // Wait 1.5 seconds for incorrect answers
-        const timer = setTimeout(() => {
-          checkAnswer({ preventDefault: () => {} });
-        }, 1000);
-
-        return () => clearTimeout(timer);
+      switch (difficulty) {
+        case "easy":
+          maxNum = op === "multiplication" ? 10 : 50;
+          minNum = 1;
+          break;
+        case "medium":
+          maxNum = op === "multiplication" ? 15 : 100;
+          minNum = 1;
+          break;
+        case "hard":
+          maxNum = op === "multiplication" ? 20 : 200;
+          minNum = 1;
+          break;
+        default:
+          maxNum = op === "multiplication" ? 10 : 50;
+          minNum = 1;
       }
-    }
-  }, [userAnswer, isActive, result, answer]);
 
-  // Authentication gate
-  if (!user) {
-    return (
-      <LockedPage
-        title="Timed Challenge"
-        description="Test your speed and accuracy with timed math challenges. Sign in to unlock this feature."
-        icon="⏱️"
-      />
-    );
-  }
+      switch (op) {
+        case "addition":
+          num1 = Math.floor(Math.random() * maxNum) + minNum;
+          num2 = Math.floor(Math.random() * maxNum) + minNum;
+          operationSymbol = "+";
+          result = num1 + num2;
+          break;
+        case "subtraction":
+          num1 = Math.floor(Math.random() * maxNum) + minNum;
+          num2 = Math.floor(Math.random() * num1) + minNum;
+          operationSymbol = "-";
+          result = num1 - num2;
+          break;
+        case "multiplication":
+          num1 = Math.floor(Math.random() * maxNum) + 1;
+          num2 = Math.floor(Math.random() * maxNum) + 1;
+          operationSymbol = "×";
+          result = num1 * num2;
+          break;
+        case "division":
+          num2 = Math.floor(Math.random() * maxNum) + 1;
+          result = Math.floor(Math.random() * maxNum) + 1;
+          num1 = num2 * result;
+          operationSymbol = "÷";
+          break;
+        default:
+          num1 = Math.floor(Math.random() * maxNum) + minNum;
+          num2 = Math.floor(Math.random() * maxNum) + minNum;
+          operationSymbol = "+";
+          result = num1 + num2;
+      }
 
-  const generateQuestion = () => {
+      setQuestion(`${num1} ${operationSymbol} ${num2}`);
+      setAnswer(result.toString());
+      setUserAnswer("");
+      setResult(null);
+    },
+    [difficulty]
+  );
+
+  const generateQuestion = useCallback(() => {
     let num1, num2, operationSymbol, result;
 
     // Generate numbers based on difficulty and operation
@@ -136,68 +158,91 @@ export default function Timed() {
     setAnswer(result.toString());
     setUserAnswer("");
     setResult(null);
-  };
+  }, [difficulty, operation, generateQuestionWithOperation]);
 
-  const generateQuestionWithOperation = (op) => {
-    let num1, num2, operationSymbol, result;
+  const checkAnswer = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (!userAnswer.trim()) return;
 
-    let maxNum, minNum;
+      const isCorrect = parseFloat(userAnswer) === parseFloat(answer);
+      setTotalCount(totalCount + 1);
 
-    switch (difficulty) {
-      case "easy":
-        maxNum = op === "multiplication" ? 10 : 50;
-        minNum = 1;
-        break;
-      case "medium":
-        maxNum = op === "multiplication" ? 15 : 100;
-        minNum = 1;
-        break;
-      case "hard":
-        maxNum = op === "multiplication" ? 20 : 200;
-        minNum = 1;
-        break;
-      default:
-        maxNum = op === "multiplication" ? 10 : 50;
-        minNum = 1;
+      if (isCorrect) {
+        setCorrectCount(correctCount + 1);
+      }
+
+      // Save progress to database
+      try {
+        // Update user stats
+        await updateUserStats(user.uid, isCorrect);
+
+        // Save wrong answer if incorrect
+        if (!isCorrect) {
+          await addWrongAnswer(
+            user.uid,
+            `${question} = ${answer} (Your answer: ${userAnswer})`
+          );
+        }
+      } catch (error) {
+        console.error("Error saving progress:", error);
+      }
+
+      // Generate next question immediately
+      generateQuestion();
+    },
+    [
+      userAnswer,
+      answer,
+      totalCount,
+      correctCount,
+      user,
+      question,
+      generateQuestion,
+    ]
+  );
+
+  useEffect(() => {
+    let interval = null;
+    if (isActive && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft(timeLeft - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      endChallenge();
     }
+    return () => clearInterval(interval);
+  }, [isActive, timeLeft, endChallenge]);
 
-    switch (op) {
-      case "addition":
-        num1 = Math.floor(Math.random() * maxNum) + minNum;
-        num2 = Math.floor(Math.random() * maxNum) + minNum;
-        operationSymbol = "+";
-        result = num1 + num2;
-        break;
-      case "subtraction":
-        num1 = Math.floor(Math.random() * maxNum) + minNum;
-        num2 = Math.floor(Math.random() * num1) + minNum;
-        operationSymbol = "-";
-        result = num1 - num2;
-        break;
-      case "multiplication":
-        num1 = Math.floor(Math.random() * maxNum) + 1;
-        num2 = Math.floor(Math.random() * maxNum) + 1;
-        operationSymbol = "×";
-        result = num1 * num2;
-        break;
-      case "division":
-        num2 = Math.floor(Math.random() * maxNum) + 1;
-        result = Math.floor(Math.random() * maxNum) + 1;
-        num1 = num2 * result;
-        operationSymbol = "÷";
-        break;
-      default:
-        num1 = Math.floor(Math.random() * maxNum) + minNum;
-        num2 = Math.floor(Math.random() * maxNum) + minNum;
-        operationSymbol = "+";
-        result = num1 + num2;
+  // Auto-submit when user types an answer
+  useEffect(() => {
+    if (isActive && userAnswer.trim() && !result) {
+      const isCorrect = parseFloat(userAnswer) === parseFloat(answer);
+
+      if (isCorrect) {
+        // Immediately accept correct answers
+        checkAnswer({ preventDefault: () => {} });
+      } else {
+        // Wait 1.5 seconds for incorrect answers
+        const timer = setTimeout(() => {
+          checkAnswer({ preventDefault: () => {} });
+        }, 1000);
+
+        return () => clearTimeout(timer);
+      }
     }
+  }, [userAnswer, isActive, result, answer, checkAnswer]);
 
-    setQuestion(`${num1} ${operationSymbol} ${num2}`);
-    setAnswer(result.toString());
-    setUserAnswer("");
-    setResult(null);
-  };
+  // Authentication gate
+  if (!user) {
+    return (
+      <LockedPage
+        title="Timed Challenge"
+        description="Test your speed and accuracy with timed math challenges. Sign in to unlock this feature."
+        icon="⏱️"
+      />
+    );
+  }
 
   const startChallenge = () => {
     setIsActive(true);
@@ -206,37 +251,6 @@ export default function Timed() {
     setCorrectCount(0);
     setTotalCount(0);
     setShowResults(false);
-    generateQuestion();
-  };
-
-  const checkAnswer = async (e) => {
-    e.preventDefault();
-    if (!userAnswer.trim()) return;
-
-    const isCorrect = parseFloat(userAnswer) === parseFloat(answer);
-    setTotalCount(totalCount + 1);
-
-    if (isCorrect) {
-      setCorrectCount(correctCount + 1);
-    }
-
-    // Save progress to database
-    try {
-      // Update user stats
-      await updateUserStats(user.uid, isCorrect);
-
-      // Save wrong answer if incorrect
-      if (!isCorrect) {
-        await addWrongAnswer(
-          user.uid,
-          `${question} = ${answer} (Your answer: ${userAnswer})`
-        );
-      }
-    } catch (error) {
-      console.error("Error saving progress:", error);
-    }
-
-    // Generate next question immediately
     generateQuestion();
   };
 
