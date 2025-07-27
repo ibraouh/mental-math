@@ -428,31 +428,78 @@ export default function Practice() {
           </div>
         </>
       ) : (
-        // Minimal layout when keyboard is open
+        // Compact layout when keyboard is open - matches the image
         <div
           style={{
             width: "100%",
-            maxWidth: "400px",
             padding: "0 16px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-start",
+            height: "100vh",
+            paddingTop: "20px",
           }}
         >
-          <div
-            style={{
-              fontSize: "28px",
-              fontWeight: "600",
-              textAlign: "center",
-              padding: "16px",
-              background: "rgba(0, 255, 255, 0.1)",
-              borderRadius: "12px",
-              marginBottom: "16px",
-              border: "1px solid rgba(0, 255, 255, 0.2)",
-            }}
-          >
-            {question || 'Click "New Question" to start'}
-          </div>
+          <div className="ios-card" style={{ marginBottom: "16px" }}>
+            <div style={{ textAlign: "center", marginBottom: "16px" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "16px",
+                  marginBottom: "16px",
+                }}
+              >
+                <div style={{ textAlign: "center" }}>
+                  <p className="ios-caption">Correct</p>
+                  <p
+                    className="ios-body"
+                    style={{ fontSize: "20px", fontWeight: "600" }}
+                  >
+                    {correctCount}
+                  </p>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <p className="ios-caption">Accuracy</p>
+                  <p
+                    className="ios-body"
+                    style={{ fontSize: "20px", fontWeight: "600" }}
+                  >
+                    {accuracy}%
+                  </p>
+                </div>
+              </div>
+            </div>
 
-          <form onSubmit={checkAnswer}>
+            <div style={{ marginBottom: "12px" }}>
+              <label
+                className="ios-caption"
+                style={{ display: "block", marginBottom: "6px" }}
+              >
+                Question
+              </label>
+              <div
+                style={{
+                  fontSize: "24px",
+                  fontWeight: "600",
+                  textAlign: "center",
+                  padding: "12px",
+                  background: "rgba(0, 255, 255, 0.1)",
+                  borderRadius: "12px",
+                  marginBottom: "12px",
+                }}
+              >
+                {question || 'Click "New Question" to start'}
+              </div>
+            </div>
+
             <div style={{ marginBottom: "16px" }}>
+              <label
+                className="ios-caption"
+                style={{ display: "block", marginBottom: "6px" }}
+              >
+                Your Answer
+              </label>
               <input
                 type="number"
                 step="any"
@@ -470,14 +517,14 @@ export default function Practice() {
             {result === "incorrect" && (
               <div
                 style={{
-                  marginBottom: "16px",
-                  padding: "12px",
+                  marginBottom: "12px",
+                  padding: "8px",
                   borderRadius: "8px",
                   background: "rgba(255, 71, 87, 0.1)",
                   border: "1px solid rgba(255, 71, 87, 0.3)",
                   color: "#ff4757",
                   textAlign: "center",
-                  fontSize: "14px",
+                  fontSize: "12px",
                 }}
               >
                 ❌ Incorrect. The answer is {answer}
@@ -502,7 +549,7 @@ export default function Practice() {
                 ? "Check Answer"
                 : "Skip"}
             </button>
-          </form>
+          </div>
         </div>
       )}
     </div>
