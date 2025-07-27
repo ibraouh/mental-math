@@ -425,41 +425,25 @@ export default function Practice() {
         // Compact layout when keyboard is open
         <div className="ios-section">
           <div className="ios-card">
-            <div style={{ textAlign: "center", marginBottom: "24px" }}>
+            <div style={{ textAlign: "center", marginBottom: "0px" }}>
               <div
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
                   gap: "16px",
-                  marginBottom: "16px",
+                  marginBottom: "0px",
                 }}
-              >
-                <div style={{ textAlign: "center" }}>
-                  <p className="ios-caption">Correct</p>
-                  <p
-                    className="ios-body"
-                    style={{ fontSize: "24px", fontWeight: "600" }}
-                  >
-                    {correctCount}
-                  </p>
-                </div>
-                <div style={{ textAlign: "center" }}>
-                  <p className="ios-caption">Accuracy</p>
-                  <p
-                    className="ios-body"
-                    style={{ fontSize: "24px", fontWeight: "600" }}
-                  >
-                    {accuracy}%
-                  </p>
-                </div>
-              </div>
+              ></div>
             </div>
 
             <form onSubmit={checkAnswer}>
               <div style={{ marginBottom: "16px" }}>
                 <label
                   className="ios-caption"
-                  style={{ display: "block", marginBottom: "8px" }}
+                  style={{
+                    display: "block",
+                    marginBottom: "8px",
+                  }}
                 >
                   Question
                 </label>
