@@ -382,7 +382,7 @@ html,
 
 /* iOS-style Animation Classes */
 .ios-fade-in {
-  animation: iosFadeIn 0.3s ease-out;
+  animation: iosFadeIn 0.15s ease-out;
 }
 
 @keyframes iosFadeIn {
