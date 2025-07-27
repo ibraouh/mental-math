@@ -115,6 +115,16 @@ export default function Practice() {
     }
   }, [result, generateQuestion]);
 
+  // Keep input field focused to maintain keyboard activation
+  useEffect(() => {
+    if (practiceStarted && question) {
+      const inputField = document.querySelector('input[type="number"]');
+      if (inputField) {
+        inputField.focus();
+      }
+    }
+  }, [practiceStarted, question]);
+
   // Simple keyboard toggle - user can manually switch layouts
   const toggleKeyboardLayout = () => {
     setIsKeyboardOpen(!isKeyboardOpen);
@@ -423,7 +433,7 @@ export default function Practice() {
         </>
       ) : (
         // Compact layout when keyboard is open
-        <div className="ios-section">
+        <div className="ios-section" style={{ marginTop: "20px" }}>
           <div className="ios-card">
             <div style={{ textAlign: "center", marginBottom: "0px" }}>
               <div
