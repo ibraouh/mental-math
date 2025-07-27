@@ -63,6 +63,7 @@ export default function Learn() {
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
   // If user is not authenticated, show locked page
   if (!user) {
@@ -163,6 +164,7 @@ export default function Learn() {
 
   const startDrill = (drillType) => {
     setSelectedDrill(drillType);
+    setIsKeyboardOpen(true); // Activate compact mode
     setScore(0);
     setTotal(0);
     setShowResult(false);
@@ -199,6 +201,7 @@ export default function Learn() {
 
   const backToDrills = () => {
     setSelectedDrill(null);
+    setIsKeyboardOpen(false); // Deactivate compact mode
     setShowResult(false);
   };
 
@@ -266,7 +269,13 @@ export default function Learn() {
                 >
                   Try Again
                 </button>
-                <button onClick={backToDrills} className="ios-button secondary">
+                <button
+                  onClick={() => {
+                    backToDrills();
+                    setIsKeyboardOpen(false); // Deactivate compact mode
+                  }}
+                  className="ios-button secondary"
+                >
                   Back to Drills
                 </button>
               </div>
@@ -281,28 +290,207 @@ export default function Learn() {
     const accuracy = total > 0 ? Math.round((score / total) * 100) : 0;
 
     return (
-      <div className="ios-container ios-fade-in">
-        <h1 className="ios-title">
-          {DRILLS.find((d) => d.id === selectedDrill)?.name}
-        </h1>
-        <p className="ios-subtitle"></p>
+      <div
+        className="ios-container ios-fade-in"
+        style={{
+          paddingTop: isKeyboardOpen ? "10px" : "20px",
+          paddingBottom: isKeyboardOpen
+            ? "10px"
+            : "calc(env(safe-area-inset-bottom, 0px) + 83px)",
+          minHeight: isKeyboardOpen ? "auto" : "100vh",
+          justifyContent: isKeyboardOpen ? "flex-start" : "flex-start",
+        }}
+      >
+        {!isKeyboardOpen ? (
+          // Normal layout when keyboard is closed
+          <>
+            <h1 className="ios-title">
+              {DRILLS.find((d) => d.id === selectedDrill)?.name}
+            </h1>
+            <p className="ios-subtitle"></p>
 
-        <div className="ios-section">
-          <div className="ios-card">
-            <button
-              onClick={backToDrills}
-              className="ios-button secondary"
-              style={{ width: "100%", marginBottom: "16px" }}
-            >
-              End Drill
-            </button>
-            <div style={{ textAlign: "center", marginBottom: "24px" }}>
+            <div className="ios-section">
+              <div className="ios-card">
+                <button
+                  onClick={backToDrills}
+                  className="ios-button secondary"
+                  style={{ width: "100%", marginBottom: "16px" }}
+                >
+                  End Drill
+                </button>
+                <div style={{ textAlign: "center", marginBottom: "24px" }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "16px",
+                      marginBottom: "24px",
+                    }}
+                  >
+                    <div style={{ textAlign: "center" }}>
+                      <p className="ios-caption">Score</p>
+                      <p
+                        className="ios-body"
+                        style={{ fontSize: "24px", fontWeight: "600" }}
+                      >
+                        {score}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      <p className="ios-caption">Accuracy</p>
+                      <p
+                        className="ios-body"
+                        style={{ fontSize: "24px", fontWeight: "600" }}
+                      >
+                        {accuracy}%
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                  <div style={{ marginBottom: "16px" }}>
+                    <label
+                      className="ios-caption"
+                      style={{ display: "block", marginBottom: "8px" }}
+                    >
+                      Question
+                    </label>
+                    <div
+                      style={{
+                        fontSize: "32px",
+                        fontWeight: "600",
+                        textAlign: "center",
+                        padding: "16px",
+                        background: "rgba(0, 255, 255, 0.1)",
+                        borderRadius: "12px",
+                        marginBottom: "16px",
+                      }}
+                    >
+                      {question}
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: "24px" }}>
+                    <label
+                      className="ios-caption"
+                      style={{ display: "block", marginBottom: "8px" }}
+                    >
+                      Your Answer
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      inputMode="numeric"
+                      value={userAnswer}
+                      onChange={(e) => setUserAnswer(e.target.value)}
+                      className="ios-input"
+                      placeholder="Enter answer"
+                      autoFocus
+                      required
+                    />
+                  </div>
+
+                  <button
+                    type={userAnswer.trim() ? "submit" : "button"}
+                    onClick={
+                      userAnswer.trim() ? undefined : generateDrillQuestion
+                    }
+                    className="ios-button"
+                    style={{ width: "100%" }}
+                  >
+                    {userAnswer.trim() ? "Check Answer" : "Skip"}
+                  </button>
+                </form>
+              </div>
+            </div>
+          </>
+        ) : (
+          // Compact layout when keyboard is open
+          <div
+            style={{
+              width: "100%",
+              padding: "0 16px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "flex-start",
+              height: "100vh",
+              paddingTop: "20px",
+            }}
+          >
+            <div className="ios-card">
+              <form onSubmit={handleSubmit}>
+                <div style={{ marginBottom: "16px" }}>
+                  <label
+                    className="ios-caption"
+                    style={{ display: "block", marginBottom: "8px" }}
+                  >
+                    Question
+                  </label>
+                  <div
+                    style={{
+                      fontSize: "32px",
+                      fontWeight: "600",
+                      textAlign: "center",
+                      padding: "16px",
+                      background: "rgba(0, 255, 255, 0.1)",
+                      borderRadius: "12px",
+                      marginBottom: "16px",
+                    }}
+                  >
+                    {question}
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: "24px" }}>
+                  <label
+                    className="ios-caption"
+                    style={{ display: "block", marginBottom: "8px" }}
+                  >
+                    Your Answer
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    inputMode="numeric"
+                    value={userAnswer}
+                    onChange={(e) => setUserAnswer(e.target.value)}
+                    className="ios-input"
+                    placeholder="Enter answer"
+                    autoFocus
+                    required
+                  />
+                </div>
+
+                <div
+                  style={{ display: "flex", gap: "12px", marginBottom: "16px" }}
+                >
+                  <button
+                    type={userAnswer.trim() ? "submit" : "button"}
+                    onClick={
+                      userAnswer.trim() ? undefined : generateDrillQuestion
+                    }
+                    className="ios-button"
+                    style={{ flex: 1 }}
+                  >
+                    {userAnswer.trim() ? "Check Answer" : "Skip"}
+                  </button>
+
+                  <button
+                    onClick={backToDrills}
+                    className="ios-button secondary"
+                    style={{ flex: 1 }}
+                  >
+                    End Drill
+                  </button>
+                </div>
+              </form>
               <div
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
                   gap: "16px",
-                  marginBottom: "24px",
+                  marginBottom: "0",
                 }}
               >
                 <div style={{ textAlign: "center" }}>
@@ -325,61 +513,8 @@ export default function Learn() {
                 </div>
               </div>
             </div>
-
-            <form onSubmit={handleSubmit}>
-              <div style={{ marginBottom: "16px" }}>
-                <label
-                  className="ios-caption"
-                  style={{ display: "block", marginBottom: "8px" }}
-                >
-                  Question
-                </label>
-                <div
-                  style={{
-                    fontSize: "32px",
-                    fontWeight: "600",
-                    textAlign: "center",
-                    padding: "16px",
-                    background: "rgba(0, 255, 255, 0.1)",
-                    borderRadius: "12px",
-                    marginBottom: "16px",
-                  }}
-                >
-                  {question}
-                </div>
-              </div>
-
-              <div style={{ marginBottom: "24px" }}>
-                <label
-                  className="ios-caption"
-                  style={{ display: "block", marginBottom: "8px" }}
-                >
-                  Your Answer
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  inputMode="numeric"
-                  value={userAnswer}
-                  onChange={(e) => setUserAnswer(e.target.value)}
-                  className="ios-input"
-                  placeholder="Enter answer"
-                  autoFocus
-                  required
-                />
-              </div>
-
-              <button
-                type={userAnswer.trim() ? "submit" : "button"}
-                onClick={userAnswer.trim() ? undefined : generateDrillQuestion}
-                className="ios-button"
-                style={{ width: "100%" }}
-              >
-                {userAnswer.trim() ? "Check Answer" : "Skip"}
-              </button>
-            </form>
           </div>
-        </div>
+        )}
       </div>
     );
   }

@@ -39,13 +39,21 @@ export default function Timed() {
   // Auto-submit when user types an answer
   useEffect(() => {
     if (isActive && userAnswer.trim() && !result) {
-      const timer = setTimeout(() => {
-        checkAnswer({ preventDefault: () => {} });
-      }, 500); // Small delay to allow user to finish typing
+      const isCorrect = parseFloat(userAnswer) === parseFloat(answer);
 
-      return () => clearTimeout(timer);
+      if (isCorrect) {
+        // Immediately accept correct answers
+        checkAnswer({ preventDefault: () => {} });
+      } else {
+        // Wait 1.5 seconds for incorrect answers
+        const timer = setTimeout(() => {
+          checkAnswer({ preventDefault: () => {} });
+        }, 1000);
+
+        return () => clearTimeout(timer);
+      }
     }
-  }, [userAnswer, isActive, result]);
+  }, [userAnswer, isActive, result, answer]);
 
   // Authentication gate
   if (!user) {
@@ -451,7 +459,6 @@ export default function Timed() {
           // Compact layout when keyboard is open
           <div
             style={{
-              marginTop: "40px",
               width: "100%",
               padding: "0 16px",
               display: "flex",
@@ -462,23 +469,6 @@ export default function Timed() {
             }}
           >
             <div className="ios-card">
-              <div
-                style={{
-                  textAlign: "center",
-                  marginBottom: "0px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "48px",
-                    fontWeight: "700",
-                    color: timeLeft > 10 ? "#00ffff" : "#ff4757",
-                  }}
-                >
-                  {formatTime(timeLeft)}
-                </div>
-              </div>
-
               <form onSubmit={checkAnswer}>
                 <div style={{ marginBottom: "16px" }}>
                   <label
@@ -540,6 +530,17 @@ export default function Timed() {
                   </button>
                 </div>
               </form>
+              <div
+                style={{
+                  fontSize: "48px",
+                  fontWeight: "700",
+                  marginTop: "20px",
+                  textAlign: "center",
+                  color: timeLeft > 10 ? "#00ffff" : "#ff4757",
+                }}
+              >
+                {formatTime(timeLeft)}
+              </div>
             </div>
           </div>
         )}
