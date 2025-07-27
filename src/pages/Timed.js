@@ -19,6 +19,16 @@ export default function Timed() {
   const [showResults, setShowResults] = useState(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
+  // Keep input field focused to maintain keyboard activation
+  useEffect(() => {
+    if (isActive && question) {
+      const inputField = document.querySelector('input[type="number"]');
+      if (inputField) {
+        inputField.focus();
+      }
+    }
+  }, [isActive, question, result]);
+
   const endChallenge = useCallback(() => {
     setIsActive(false);
     setShowResults(true);
@@ -172,20 +182,18 @@ export default function Timed() {
         setCorrectCount(correctCount + 1);
       }
 
-      // Save progress to database
-      try {
-        // Update user stats
-        await updateUserStats(user.uid, isCorrect);
-
-        // Save wrong answer if incorrect
-        if (!isCorrect) {
-          await addWrongAnswer(
-            user.uid,
-            `${question} = ${answer} (Your answer: ${userAnswer})`
-          );
-        }
-      } catch (error) {
+      // Save progress to database in background (don't wait for it)
+      updateUserStats(user.uid, isCorrect).catch((error) => {
         console.error("Error saving progress:", error);
+      });
+
+      if (!isCorrect) {
+        addWrongAnswer(
+          user.uid,
+          `${question} = ${answer} (Your answer: ${userAnswer})`
+        ).catch((error) => {
+          console.error("Error saving wrong answer:", error);
+        });
       }
 
       // Generate next question immediately
@@ -214,24 +222,7 @@ export default function Timed() {
     return () => clearInterval(interval);
   }, [isActive, timeLeft, endChallenge]);
 
-  // Auto-submit when user types an answer
-  useEffect(() => {
-    if (isActive && userAnswer.trim() && !result) {
-      const isCorrect = parseFloat(userAnswer) === parseFloat(answer);
-
-      if (isCorrect) {
-        // Immediately accept correct answers
-        checkAnswer({ preventDefault: () => {} });
-      } else {
-        // Wait 1.5 seconds for incorrect answers
-        const timer = setTimeout(() => {
-          checkAnswer({ preventDefault: () => {} });
-        }, 1000);
-
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [userAnswer, isActive, result, answer, checkAnswer]);
+  // Remove auto-submit effect - let user control submission speed
 
   // Authentication gate
   if (!user) {

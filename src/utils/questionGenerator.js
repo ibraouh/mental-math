@@ -61,34 +61,3 @@ export const generateQuestionWithOperation = (
 
   return { question, answer };
 };
-
-// Generate drill questions for specific topics
-export const generateDrillQuestion = (drillType) => {
-  switch (drillType) {
-    case "addition":
-      return generateQuestionWithOperation("addition");
-
-    case "subtraction":
-      return generateQuestionWithOperation("subtraction");
-
-    case "multiplication":
-      return generateQuestionWithOperation("multiplication");
-
-    case "division":
-      return generateQuestionWithOperation("division");
-
-    case "mixed":
-      const operations = [
-        "addition",
-        "subtraction",
-        "multiplication",
-        "division",
-      ];
-      const randomOp =
-        operations[Math.floor(Math.random() * operations.length)];
-      return generateQuestionWithOperation(randomOp);
-
-    default:
-      return generateQuestionWithOperation("addition");
-  }
-};

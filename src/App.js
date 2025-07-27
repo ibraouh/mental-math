@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import Practice from "./pages/Practice";
 import Timed from "./pages/Timed";
-import Learn from "./pages/Learn";
+import Drills from "./pages/Drills";
 import AITrain from "./pages/AITrain";
 import Profile from "./pages/Profile";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -65,7 +65,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Practice />} />
                 <Route path="/timed" element={<Timed />} />
-                <Route path="/drills" element={<Learn />} />
+                <Route path="/drills" element={<Drills />} />
                 <Route path="/ai-train" element={<AITrain />} />
                 <Route path="/profile" element={<Profile />} />
               </Routes>

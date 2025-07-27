@@ -54,7 +54,7 @@ const DRILLS = [
   },
 ];
 
-export default function Learn() {
+export default function Drills() {
   const { user } = useAuth();
   const [selectedDrill, setSelectedDrill] = useState(null);
   const [question, setQuestion] = useState("");

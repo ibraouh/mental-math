@@ -384,3 +384,7 @@ html,
 .ios-spacing-sm {
   margin-bottom: 16px;
 }
+
+.ios-spacing-md {
+  margin-bottom: 24px;
+}

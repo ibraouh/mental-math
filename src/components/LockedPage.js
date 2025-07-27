@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function LockedPage({ title, description, icon }) {
+export default function LockedPage({ title, description }) {
   const navigate = useNavigate();
 
   return (

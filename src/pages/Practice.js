@@ -1,7 +1,6 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { IoAdd, IoRemove, IoClose, IoRemoveOutline } from "react-icons/io5";
 import { generateQuestionWithOperation } from "../utils/questionGenerator";
-import ResultDisplay from "../components/ResultDisplay";
 
 export default function Practice() {
   const [leftDigits, setLeftDigits] = useState(2);
@@ -12,6 +11,16 @@ export default function Practice() {
   const [userAnswer, setUserAnswer] = useState("");
   const [result, setResult] = useState(null);
   const [practiceStarted, setPracticeStarted] = useState(false);
+
+  // Keep input field focused to maintain keyboard activation
+  useEffect(() => {
+    if (practiceStarted && question) {
+      const inputField = document.querySelector('input[type="number"]');
+      if (inputField) {
+        inputField.focus();
+      }
+    }
+  }, [practiceStarted, question, result]);
 
   const generateQuestion = useCallback(() => {
     const availableOperations =
@@ -58,6 +67,18 @@ export default function Practice() {
     setResult(null);
   };
 
+  // Validate answer
+  const handleSubmit = () => {
+    if (userAnswer.trim() === "") return;
+    if (userAnswer.trim() === answer) {
+      setResult("correct");
+      // Auto-advance immediately for correct answers
+      generateQuestion();
+    } else {
+      setResult("incorrect");
+    }
+  };
+
   return (
     <div
       className="ios-container ios-fade-in"
@@ -89,7 +110,7 @@ export default function Practice() {
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    gridTemplateColumns: "1fr 1fr 1fr",
                     gap: "12px",
                   }}
                 >
@@ -207,7 +228,7 @@ export default function Practice() {
                   onChange={(e) => setUserAnswer(e.target.value)}
                   className="ios-input"
                   placeholder="Enter answer"
-                  disabled={!question}
+                  disabled={!question || result}
                   required
                   autoFocus
                 />
@@ -217,15 +238,32 @@ export default function Practice() {
                 <div
                   style={{
                     marginBottom: "16px",
-                    padding: "12px",
+                    padding: "6px 12px",
                     borderRadius: "8px",
                     background: "rgba(255, 71, 87, 0.1)",
                     border: "1px solid rgba(255, 71, 87, 0.3)",
                     color: "#ff4757",
                     textAlign: "center",
+                    fontSize: "14px",
                   }}
                 >
                   ❌ Incorrect. The answer is {answer}
+                </div>
+              )}
+              {result === "correct" && (
+                <div
+                  style={{
+                    marginBottom: "16px",
+                    padding: "6px 12px",
+                    borderRadius: "8px",
+                    background: "rgba(0, 255, 136, 0.1)",
+                    border: "1px solid rgba(0, 255, 136, 0.3)",
+                    color: "#00ff88",
+                    textAlign: "center",
+                    fontSize: "14px",
+                  }}
+                >
+                  ✅ Correct!
                 </div>
               )}
 
@@ -238,11 +276,12 @@ export default function Practice() {
               >
                 <button
                   type="button"
-                  onClick={generateQuestion}
+                  onClick={result ? handleNext : handleSubmit}
                   className="ios-button"
                   style={{ width: "100%" }}
+                  disabled={!userAnswer.trim()}
                 >
-                  {result === "incorrect" ? "Next Question" : "Skip"}
+                  {result ? "Next Question" : "Submit"}
                 </button>
 
                 <button
@@ -261,17 +300,6 @@ export default function Practice() {
             </div>
           </div>
         </div>
-      )}
-
-      {result && (
-        <ResultDisplay
-          result={result}
-          question={question}
-          userAnswer={userAnswer}
-          answer={answer}
-          onNext={handleNext}
-          showRetry={false}
-        />
       )}
     </div>
   );
