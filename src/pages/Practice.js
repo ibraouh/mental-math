@@ -103,6 +103,14 @@ export default function Practice() {
         console.error("Error saving progress:", error);
       }
     }
+
+    // Keep input field focused to maintain keyboard activation
+    setTimeout(() => {
+      const inputField = document.querySelector('input[type="number"]');
+      if (inputField) {
+        inputField.focus();
+      }
+    }, 100);
   };
 
   // Auto-advance to next question when answer is correct
@@ -124,6 +132,42 @@ export default function Practice() {
       }
     }
   }, [practiceStarted, question]);
+
+  // Auto-advance when correct answer is typed
+  useEffect(() => {
+    if (practiceStarted && question && userAnswer.trim() && !result) {
+      const isCorrect = parseFloat(userAnswer) === parseFloat(answer);
+      if (isCorrect) {
+        // Save progress to database if user is logged in
+        if (user) {
+          try {
+            updateUserStats(user.uid, true);
+          } catch (error) {
+            console.error("Error saving progress:", error);
+          }
+        }
+
+        setResult("correct");
+        setTotalCount(totalCount + 1);
+        setCorrectCount(correctCount + 1);
+
+        // Auto-advance to next question after a short delay
+        setTimeout(() => {
+          generateQuestion();
+        }, 200);
+      }
+    }
+  }, [
+    userAnswer,
+    practiceStarted,
+    question,
+    answer,
+    result,
+    user,
+    totalCount,
+    correctCount,
+    generateQuestion,
+  ]);
 
   // Simple keyboard toggle - user can manually switch layouts
   const toggleKeyboardLayout = () => {
